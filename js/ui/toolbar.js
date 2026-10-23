@@ -29,6 +29,7 @@ export class Toolbar {
     document.getElementById('btn-import').addEventListener('click', () => this.handlers.onImport());
     document.getElementById('btn-export').addEventListener('click', () => this.handlers.onExport());
     document.getElementById('btn-print').addEventListener('click', () => this.handlers.onPrint());
+    document.getElementById('btn-export-image')?.addEventListener('click', () => this.handlers.onExportImage?.());
     document.getElementById('btn-auto').addEventListener('click', () => this.handlers.onAuto());
     this.themeBtn.addEventListener('click', () => this.handlers.onTheme());
     this.undoBtn.addEventListener('click', () => this.store.undo());

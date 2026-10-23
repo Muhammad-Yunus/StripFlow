@@ -27,6 +27,7 @@ import { toast } from './ui/toast.js';
 import { downloadProject, deserializeProject, normalize, safeName } from './export/json.js';
 import { downloadNetlist } from './export/netlist.js';
 import { printProject } from './export/print.js';
+import { exportImage } from './export/image.js';
 
 globalThis.addEventListener('error', (e) => {
   console.error('[stripflow] uncaught', e.error ?? e.message);
@@ -103,6 +104,7 @@ async function boot() {
       toast('Netlist exported', 'ok');
     },
     onPrint: () => openPrintDialog(),
+    onExportImage: () => openExportImageDialog(),
     onAuto: () => openAutoDialog(),
     onTheme: () => toolbar.setTheme(toggleTheme(currentTheme)),
   });
@@ -153,6 +155,12 @@ async function boot() {
     document.getElementById('modal-print').close('cancel');
   });
   document.getElementById('print-run').addEventListener('click', () => runPrint());
+
+  document.getElementById('btn-export-image').addEventListener('click', () => openExportImageDialog());
+  document.getElementById('export-image-cancel').addEventListener('click', () => {
+    document.getElementById('modal-export-image').close('cancel');
+  });
+  document.getElementById('export-image-run').addEventListener('click', () => runExportImage());
 
   document.getElementById('btn-custom-component').addEventListener('click', () => openSymbolDialog());
   document.getElementById('symbol-add-pin').addEventListener('click', () => addPinRow());
@@ -339,6 +347,40 @@ async function boot() {
     const project = store.getProject();
     const nets = computeNets(project.schematic);
     printProject(project, analyzeBoard(project, nets), nets, options);
+  }
+
+  function openExportImageDialog() {
+    document.getElementById('modal-export-image').showModal();
+  }
+
+  function runExportImage() {
+    const options = {
+      view: document.getElementById('export-image-view').value,
+      format: document.getElementById('export-image-format').value,
+      scale: document.getElementById('export-image-scale').value,
+      labels: document.getElementById('export-image-labels').checked,
+      grid: document.getElementById('export-image-grid').checked,
+    };
+    document.getElementById('modal-export-image').close('export');
+    const project = store.getProject();
+    void exportImage(project, options);
+  }
+
+  function openExportImageDialog() {
+    document.getElementById('modal-export-image').showModal();
+  }
+
+  function runExportImage() {
+    const options = {
+      view: document.getElementById('export-image-view').value,
+      format: document.getElementById('export-image-format').value,
+      scale: document.getElementById('export-image-scale').value,
+      labels: document.getElementById('export-image-labels').checked,
+      grid: document.getElementById('export-image-grid').checked,
+    };
+    document.getElementById('modal-export-image').close('export');
+    const project = store.getProject();
+    void exportImage(project, options);
   }
 
   function openSymbolDialog() {

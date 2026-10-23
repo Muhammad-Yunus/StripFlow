@@ -39,6 +39,7 @@
           <button class="btn" id="btn-import" title="Import JSON">Import</button>
           <button class="btn" id="btn-export" title="Export project JSON">Export</button>
           <button class="btn" id="btn-export-netlist" title="Export KiCad netlist">Netlist</button>
+          <button class="btn" id="btn-export-image" title="Export image (PNG/SVG)">Image</button>
           <button class="btn" id="btn-auto" title="Auto-layout the board">Auto-layout</button>
           <button class="btn" id="btn-print" title="Print 1:1 template">Print</button>
           <button class="btn btn--icon" id="btn-theme" title="Toggle theme" aria-label="Toggle theme">◐</button>
@@ -183,6 +184,45 @@
         <div class="modal__actions">
           <button type="button" class="btn" id="print-cancel">Cancel</button>
           <button type="button" class="btn btn--primary" id="print-run">Print</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="modal-export-image" class="modal">
+      <form method="dialog" class="modal__body" id="export-image-form">
+        <h2 class="modal__title">Export image</h2>
+        <p class="modal__lede">Render schematic/board to PNG or SVG without UI.</p>
+        <label class="field">
+          <span>View</span>
+          <select id="export-image-view">
+            <option value="board">Board only</option>
+            <option value="schematic">Schematic only</option>
+            <option value="both">Schematic + Board</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Format</span>
+          <select id="export-image-format">
+            <option value="png">PNG</option>
+            <option value="svg">SVG</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Scale</span>
+          <select id="export-image-scale">
+            <option value="1">1x</option>
+            <option value="2" selected>2x</option>
+            <option value="3">3x</option>
+            <option value="4">4x</option>
+          </select>
+        </label>
+        <label class="field field--inline">
+          <input type="checkbox" id="export-image-labels" checked /> Labels</label>
+        <label class="field field--inline">
+          <input type="checkbox" id="export-image-grid" checked /> Grid/holes</label>
+        <div class="modal__actions">
+          <button type="button" class="btn" id="export-image-cancel">Cancel</button>
+          <button type="button" class="btn btn--primary" id="export-image-run">Export</button>
         </div>
       </form>
     </dialog>
