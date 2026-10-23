@@ -6,9 +6,10 @@ import { showContextMenu } from './menus.js';
 
 export class Sidebar {
   /** @param {import('../core/store.js').Store} store */
-  constructor(store, { toast = () => {} } = {}) {
+  constructor(store, { toast = () => {}, onEditSymbol = () => {} } = {}) {
     this.store = store;
     this.toast = toast;
+    this.onEditSymbol = onEditSymbol;
     this.libraryEl = document.getElementById('library-list');
     this.netEl = document.getElementById('net-list');
     this.unplacedEl = document.getElementById('unplaced-list');
@@ -368,6 +369,12 @@ export class Sidebar {
 
     const actions = document.createElement('div');
     actions.className = 'properties__actions';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn';
+    editBtn.textContent = 'Edit footprint';
+    editBtn.addEventListener('click', () => this.onEditSymbol(id));
+    actions.appendChild(editBtn);
 
     const rotateBtn = document.createElement('button');
     rotateBtn.className = 'btn';

@@ -237,6 +237,7 @@ Semua entity serializable (plain object), tanpa `class` dengan state tersembunyi
 Catatan:
 - `netStyles` menyimpan override warna dari UI sidebar; `computeNets()` mengisinya ke `Net.color`. Rename net memindahkan style lama ke nama baru dan menulis ulang semua flag/label (atau menambah label di pin pertama untuk auto-net).
 - Custom component (`customSymbols`) memakai `SymbolDef` yang sama, dengan `custom: true`; id berawalan `sym_`. Pin offset relatif terhadap origin, integer, dan harus berada di dalam body. Dibuat lewat modal dan dapat dihapus bila belum dipakai.
+- **Editable footprint (SB-14):** dari properties komponen board, **Edit footprint** membuka modal symbol yang sudah terisi body size + pin. Mengedit symbol standar membuat salinan custom dan meng-assign ke komponen terpilih; mengedit custom symbol memperbarui semua komponen yang memakainya. `pin.id` dipertahankan agar net/wire tidak putus, dan endpoint wire yang menempel pada pin ikut digeser ke posisi pin baru.
 - `SComponent.offBoard`: komponen eksternal; board menggambar solder pad (tanpa body solid), print menambahkan tabel off-board wiring. Auto-layout hanya mempertahankan pad yang sudah ditempatkan dan tidak memindahkannya; off-board yang belum ditempatkan diabaikan.
 - Package `flexible` (resistor, cap, diode, LED, switch, inductor, thermistor, fuse, LDR) memakai `leadsSpan` untuk pin fleksibel.
 

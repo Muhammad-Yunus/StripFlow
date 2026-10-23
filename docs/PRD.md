@@ -114,7 +114,7 @@ Prioritas memakai MoSCoW: **M**ust, **S**hould, **C**ould, **W**on't (v1).
 | SB-11 | Insert/delete row/col | M | Right-click di board; delete meng-unplace part yang terdampak; part yang hanya melintas mengecil. |
 | SB-12 | Flexible leads (2-pin) | S | Drag satu pin untuk mengubah span/resapan; dalam batas package. |
 | SB-13 | Package picker | S | Pilih body fisik (resistor 1/4W / 1/2W, TO-92 / TO-220, dsb.). |
-| SB-14 | Editable IC footprint | S | Ubah ukuran grid & posisi pin IC/connector. |
+| SB-14 | Editable IC footprint | S | Dari properties board: ubah ukuran body & posisi pin IC/connector; symbol standar menjadi salinan custom, pin id & wire dipertahankan. |
 | SB-15 | Lock part untuk auto-layout | S | `L` toggle / properties; part terkunci tidak dipindah router. |
 | SB-20 | Off-board component | M | Tandai di properties schematic/board; tampilkan solder pad saja. |
 | SB-16 | Lock board size | S | Padlock di Rows/Cols; router tidak boleh membesar. |

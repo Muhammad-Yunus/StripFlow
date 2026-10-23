@@ -1,5 +1,5 @@
 import { Store } from './core/store.js';
-import { clamp } from './core/geometry.js';
+import { clamp, componentPinPos } from './core/geometry.js';
 import { uid } from './core/ids.js';
 import { createProject } from './core/state.js';
 import { AutoSave } from './core/autosave.js';
@@ -14,6 +14,7 @@ import {
   setSetting,
 } from './core/storage.js';
 import { computeNets } from './schematic/netlist.js';
+import { getSymbol } from './schematic/library.js';
 import { SchematicRenderer } from './schematic/renderer.js';
 import { SchematicTools } from './schematic/tools.js';
 import { BoardRenderer } from './board/renderer.js';
@@ -63,6 +64,8 @@ async function boot() {
   let activePanel = 'schematic';
   /** @type {AbortController|null} */
   let layoutController = null;
+  /** @type {{compId:string,symbolId:string,custom:boolean}|null} */
+  let symbolEdit = null;
   const setHint = (which, text) => {
     const el = document.getElementById(`${which}-hint`);
     if (el) el.textContent = text || (which === 'schematic' ? SCHEMATIC_HINT : BOARD_HINT);
@@ -88,7 +91,7 @@ async function boot() {
     toast,
   });
 
-  const sidebar = new Sidebar(store, { toast });
+  const sidebar = new Sidebar(store, { toast, onEditSymbol: (compId) => openSymbolEditor(compId) });
 
   const toolbar = new Toolbar(store, {
     theme: 'light',
@@ -166,6 +169,7 @@ async function boot() {
   document.getElementById('btn-custom-component').addEventListener('click', () => openSymbolDialog());
   document.getElementById('symbol-add-pin').addEventListener('click', () => addPinRow());
   document.getElementById('symbol-cancel').addEventListener('click', () => {
+    symbolEdit = null;
     document.getElementById('modal-symbol').close('cancel');
   });
   document.getElementById('symbol-form').addEventListener('submit', (e) => {
@@ -390,8 +394,13 @@ async function boot() {
   }
 
   function openSymbolDialog() {
+    symbolEdit = null;
     const form = document.getElementById('symbol-form');
     form.reset();
+    document.getElementById('symbol-title').textContent = 'Custom component';
+    document.getElementById('symbol-lede').textContent =
+      'Define a reusable symbol with its own body size and pin grid offsets.';
+    document.getElementById('symbol-save').textContent = 'Create';
     document.getElementById('symbol-prefix').value = 'U';
     document.getElementById('symbol-value').value = '';
     document.getElementById('symbol-width').value = '6';
@@ -405,9 +414,54 @@ async function boot() {
     setTimeout(() => document.getElementById('symbol-label').focus(), 0);
   }
 
-  function addPinRow(name = '', x = '', y = '') {
+  function openSymbolEditor(compId) {
+    const project = store.getProject();
+    const comp = project.schematic.components.find((c) => c.id === compId);
+    const symbol = comp ? getSymbol(comp.symbolId, project.customSymbols) : null;
+    if (!comp || !symbol) {
+      toast('Footprint not found', 'error');
+      return;
+    }
+    const custom = (project.customSymbols || []).some((s) => s.id === symbol.id);
+    symbolEdit = { compId, symbolId: symbol.id, custom };
+    const form = document.getElementById('symbol-form');
+    form.reset();
+    document.getElementById('symbol-title').textContent = custom
+      ? 'Edit custom footprint'
+      : 'Edit component footprint';
+    document.getElementById('symbol-lede').textContent = custom
+      ? 'Updates every component using this custom symbol; pin ids are preserved.'
+      : 'Saves a custom copy of this footprint and assigns it to the selected component; ' +
+        'pin ids are preserved.';
+    document.getElementById('symbol-save').textContent = 'Save footprint';
+    document.getElementById('symbol-label').value = custom
+      ? symbol.label
+      : `${symbol.label} (edited)`;
+    document.getElementById('symbol-prefix').value = symbol.refPrefix;
+    document.getElementById('symbol-value').value = symbol.defaultValue ?? comp.value;
+    document.getElementById('symbol-width').value = String(symbol.width);
+    document.getElementById('symbol-height').value = String(symbol.height);
+    const pins = document.getElementById('symbol-pins');
+    pins.textContent = '';
+    for (const pin of symbol.pins) {
+      addPinRow(
+        pin.name,
+        String(pin.offset.x),
+        String(pin.offset.y),
+        pin.id,
+        pin.type || 'passive',
+      );
+    }
+    showSymbolError('');
+    document.getElementById('modal-symbol').showModal();
+    setTimeout(() => document.getElementById('symbol-label').focus(), 0);
+  }
+
+  function addPinRow(name = '', x = '', y = '', pinId = '', pinType = 'passive') {
     const row = document.createElement('div');
     row.className = 'symbol-pin';
+    row.dataset.pinId = pinId;
+    row.dataset.pinType = pinType;
     for (const [placeholder, value, type] of [
       ['Pin name', name, 'text'],
       ['X', x, 'number'],
@@ -471,15 +525,20 @@ async function boot() {
       if (pins.some((p) => p.name === name)) {
         return showSymbolError(`Pin name "${name}" is used twice.`);
       }
+      const pinId = row.dataset.pinId || `p${index + 1}`;
+      if (pins.some((p) => p.id === pinId)) {
+        return showSymbolError(`Pin id "${pinId}" is used twice.`);
+      }
       pins.push({
-        id: `p${index + 1}`,
+        id: pinId,
         name,
         offset: { x, y },
-        type: 'passive',
+        type: row.dataset.pinType || 'passive',
       });
     }
+    const editing = symbolEdit;
     const symbol = {
-      id: uid('sym'),
+      id: editing?.custom ? editing.symbolId : uid('sym'),
       label,
       refPrefix,
       defaultValue: defaultValue || label,
@@ -488,6 +547,44 @@ async function boot() {
       custom: true,
       pins,
     };
+    if (editing) {
+      const compId = editing.compId;
+      store.apply('Edit footprint', (draft) => {
+        if (!Array.isArray(draft.customSymbols)) draft.customSymbols = [];
+        const index = draft.customSymbols.findIndex((s) => s.id === symbol.id);
+        if (index >= 0) draft.customSymbols[index] = symbol;
+        else draft.customSymbols.push(symbol);
+        const clonePins = () => symbol.pins.map((p) => ({ ...p, offset: { ...p.offset } }));
+        const key = (p) => `${Math.round(p.x * 1000) / 1000},${Math.round(p.y * 1000) / 1000}`;
+        const moves = new Map();
+        for (const comp of draft.schematic.components) {
+          const sameCustom = symbol.id === editing.symbolId && comp.symbolId === editing.symbolId;
+          if (comp.id !== compId && !sameCustom) continue;
+          const oldPins = new Map(comp.pins.map((p) => [p.id, p]));
+          for (const pin of symbol.pins) {
+            const oldPin = oldPins.get(pin.id);
+            if (!oldPin) continue;
+            moves.set(key(componentPinPos(comp, oldPin.offset)), componentPinPos(comp, pin.offset));
+          }
+          comp.symbolId = symbol.id;
+          comp.pins = clonePins();
+        }
+        for (const wire of draft.schematic.wires) {
+          for (const point of wire.points) {
+            const moved = moves.get(key(point));
+            if (moved) {
+              point.x = moved.x;
+              point.y = moved.y;
+            }
+          }
+        }
+      });
+      symbolEdit = null;
+      showSymbolError('');
+      document.getElementById('modal-symbol').close('saved');
+      toast(`Footprint "${label}" updated`, 'ok');
+      return;
+    }
     store.apply('Add custom component', (draft) => {
       if (!Array.isArray(draft.customSymbols)) draft.customSymbols = [];
       draft.customSymbols.push(symbol);
