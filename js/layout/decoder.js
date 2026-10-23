@@ -196,8 +196,9 @@ export function finalize(project, model, placements, options) {
 
   const neededRows = maxRow + margin + 1;
   const neededCols = maxCol + margin + 1;
-  const rows = options.targetRows ?? Math.max(2, neededRows);
-  const cols = options.targetCols ?? Math.max(2, neededCols);
+  const extraRoom = Math.max(0, Math.round(options.extraRoom ?? 0));
+  const rows = options.targetRows ?? Math.max(2, neededRows + extraRoom);
+  const cols = options.targetCols ?? Math.max(2, neededCols + extraRoom);
 
   // Cuts: put a cut between adjacent pins that belong to different nets.
   /** @type {import('../core/types.js').Cut[]} */

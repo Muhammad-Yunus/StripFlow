@@ -517,7 +517,7 @@ decode(state) ->
   1. sequencePairToRelations(orderA, orderB)
   2. rowSolve(relations, stripGroups)  // longest-path / difference constraints
   3. colSolve(relations)
-  4. render pins into grid (margin 1)
+  4. render pins into grid (margin 1 + clearance)
    5. segment rows, place cuts at net boundaries
    6. route link wires: endpoint dipilih dari hole mana pun dalam segmen tembaga
       yang sama (bukan hanya hole pin); biaya = jarak + bonus sejajar + penalti silang pin
@@ -584,12 +584,13 @@ for run in portfolio(effort):
 - Mengirim `postMessage` progress throttled (≤ 10 Hz).
 - `layout/client.js` menerima `{ signal, onProgress }`; abort → reject `AbortError`, worker di-terminate dan di-recreate.
 - UI modal menampilkan progress bar + est countdown, `Run` disabled selama run, `Cancel`/Escape membatalkan tanpa mengubah board.
-- Effort terakhir disimpan di settings (`layoutEffort`).
+- Setting auto-layout disimpan di localStorage `stripflow:layoutOptions` (`effort`, `drilledOnly`, `newLayout`, `extraRoom`); `layoutEffort` lama tetap ditulis untuk kompatibilitas.
+- `newLayout` menambahkan timestamp ke seed sehingga setiap run menghasilkan layout berbeda; `extraRoom` menambah baris/kolom kosong di luar kebutuhan packing (kecuali dimensi dikunci).
 - Transfer data: kirim model minimal (komponen, pin, net), bukan seluruh project.
 
 ### 9.7 Determinisme
 
-PRNG mulberry32 dengan seed dari `project.meta.seed` + `runIndex`; hasil dapat direproduksi.
+PRNG mulberry32 dengan seed dari `project.meta.seed` + effort (dan timestamp bila `newLayout`); hasil dapat direproduksi selama `newLayout` mati.
 
 ---
 

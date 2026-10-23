@@ -160,7 +160,6 @@ async function boot() {
   });
   document.getElementById('print-run').addEventListener('click', () => runPrint());
 
-  document.getElementById('btn-export-image').addEventListener('click', () => openExportImageDialog());
   document.getElementById('export-image-cancel').addEventListener('click', () => {
     document.getElementById('modal-export-image').close('cancel');
   });
@@ -357,23 +356,6 @@ async function boot() {
     const project = store.getProject();
     const nets = computeNets(project.schematic);
     printProject(project, analyzeBoard(project, nets), nets, options);
-  }
-
-  function openExportImageDialog() {
-    document.getElementById('modal-export-image').showModal();
-  }
-
-  function runExportImage() {
-    const options = {
-      view: document.getElementById('export-image-view').value,
-      format: document.getElementById('export-image-format').value,
-      scale: document.getElementById('export-image-scale').value,
-      labels: document.getElementById('export-image-labels').checked,
-      grid: document.getElementById('export-image-grid').checked,
-    };
-    document.getElementById('modal-export-image').close('export');
-    const project = store.getProject();
-    void exportImage(project, options);
   }
 
   function openExportImageDialog() {
@@ -597,9 +579,12 @@ async function boot() {
   function openAutoDialog() {
     document.getElementById('auto-lock-rows').checked = false;
     document.getElementById('auto-lock-cols').checked = false;
+    const saved = getSetting('layoutOptions', {}) ?? {};
+    const savedEffort = saved.effort ?? getSetting('layoutEffort', 'normal');
     document.getElementById('auto-drilled-only').checked =
-      store.getProject().board.options?.drilledCutsOnly ?? false;
-    const savedEffort = getSetting('layoutEffort', 'normal');
+      saved.drilledOnly ?? store.getProject().board.options?.drilledCutsOnly ?? false;
+    document.getElementById('auto-new-layout').checked = saved.newLayout ?? false;
+    document.getElementById('auto-extra-room').value = String(saved.extraRoom ?? 0);
     document.getElementById('auto-effort').value = ['fast', 'normal', 'high'].includes(savedEffort)
       ? savedEffort
       : 'normal';
@@ -622,9 +607,17 @@ async function boot() {
       lockRows: document.getElementById('auto-lock-rows').checked,
       lockCols: document.getElementById('auto-lock-cols').checked,
       drilledOnly: document.getElementById('auto-drilled-only').checked,
+      newLayout: document.getElementById('auto-new-layout').checked,
+      extraRoom: Number(document.getElementById('auto-extra-room').value) || 0,
     };
     const estimate = { fast: 500, normal: 2000, high: 6000 }[options.effort] ?? 2000;
     setSetting('layoutEffort', options.effort);
+    setSetting('layoutOptions', {
+      effort: options.effort,
+      drilledOnly: options.drilledOnly,
+      newLayout: options.newLayout,
+      extraRoom: options.extraRoom,
+    });
     const controller = new AbortController();
     layoutController = controller;
     runBtn.disabled = true;

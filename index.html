@@ -158,6 +158,17 @@
         <label class="field field--inline">
           <input type="checkbox" id="auto-drilled-only" /> Drilled cuts only
         </label>
+        <label class="field field--inline">
+          <input type="checkbox" id="auto-new-layout" /> New layout every run
+        </label>
+        <label class="field">
+          <span>Extra room</span>
+          <select id="auto-extra-room">
+            <option value="0" selected>None</option>
+            <option value="2">+2 rows / cols</option>
+            <option value="4">+4 rows / cols</option>
+          </select>
+        </label>
         <div class="progress" id="auto-progress" hidden>
           <div class="progress__bar" id="auto-progress-bar"></div>
         </div>

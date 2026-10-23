@@ -8,7 +8,10 @@ import { bus, EVENTS } from '../core/eventbus.js';
  * @returns {Promise<{board:import('../core/types.js').Board, failed:string[], score:number, ms:number}>}
  */
 export function runAutoLayout(project, options, deps = {}) {
-  const seed = hashSeed(`${project.meta?.seed ?? project.id}:${options.effort}`);
+  const seedSource = `${project.meta?.seed ?? project.id}:${options.effort}${
+    options.newLayout ? `:${Date.now()}` : ''
+  }`;
+  const seed = hashSeed(seedSource);
   const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
 
   return new Promise((resolve, reject) => {

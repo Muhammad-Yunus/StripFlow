@@ -4,6 +4,8 @@
  * @property {boolean} lockRows
  * @property {boolean} lockCols
  * @property {boolean} drilledOnly
+ * @property {boolean} [newLayout]
+ * @property {number} [extraRoom]
  * @property {number} [targetRows]
  * @property {number} [targetCols]
  */
