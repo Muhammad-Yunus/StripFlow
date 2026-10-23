@@ -1,7 +1,7 @@
 import { bus, EVENTS } from '../core/eventbus.js';
 
 /**
- * Run auto-layout in a worker.
+ * Run auto-layout in one or more workers and keep the best result.
  * @param {import('../core/types.js').Project} project
  * @param {import('./types.js').LayoutOptions} options
  * @param {{signal?:AbortSignal, onProgress?:(p:any)=>void}} [deps]
@@ -12,6 +12,38 @@ export function runAutoLayout(project, options, deps = {}) {
     options.newLayout ? `:${Date.now()}` : ''
   }`;
   const seed = hashSeed(seedSource);
+  const threads = Math.max(1, Math.min(4, Math.round(options.threads ?? 1)));
+
+  if (threads === 1) {
+    return runWorker(project, { ...options, threads: 1 }, seed, deps, true).then((r) => r.result);
+  }
+
+  const jobs = [];
+  for (let i = 0; i < threads; i++) {
+    const workerSeed = (seed + Math.imul(i, 2654435761)) >>> 0;
+    jobs.push(runWorker(project, { ...options, threads: 1 }, workerSeed, deps, false));
+  }
+
+  return Promise.allSettled(jobs).then((settled) => {
+    const done = settled.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+    if (done.length === 0) {
+      const failed = settled.find((r) => r.status === 'rejected');
+      throw failed?.reason ?? new Error('Auto-layout failed.');
+    }
+    const best = done.reduce((a, b) => (b.result.score < a.result.score ? b : a));
+    bus.emit(EVENTS.LAYOUT_DONE, best.message);
+    return best.result;
+  });
+}
+
+/**
+ * @param {import('../core/types.js').Project} project
+ * @param {import('./types.js').LayoutOptions} options
+ * @param {number} seed
+ * @param {{signal?:AbortSignal, onProgress?:(p:any)=>void}} deps
+ * @param {boolean} emitDone
+ */
+function runWorker(project, options, seed, deps, emitDone) {
   const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
 
   return new Promise((resolve, reject) => {
@@ -48,8 +80,8 @@ export function runAutoLayout(project, options, deps = {}) {
       }
       if (msg.type === 'done') {
         const { board, failed, score, ms } = msg;
-        bus.emit(EVENTS.LAYOUT_DONE, msg);
-        finish(resolve, { board, failed, score, ms });
+        if (emitDone) bus.emit(EVENTS.LAYOUT_DONE, msg);
+        finish(resolve, { result: { board, failed, score, ms }, message: msg });
       } else if (msg.type === 'error') {
         finish(reject, new Error(msg.message || 'Auto-layout failed.'));
       }

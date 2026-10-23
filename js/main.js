@@ -594,6 +594,9 @@ async function boot() {
       saved.drilledOnly ?? store.getProject().board.options?.drilledCutsOnly ?? false;
     document.getElementById('auto-new-layout').checked = saved.newLayout ?? false;
     document.getElementById('auto-extra-room').value = String(saved.extraRoom ?? 0);
+    document.getElementById('auto-no-stacked').checked = saved.noStackedWires ?? false;
+    document.getElementById('auto-standing').checked = saved.standingParts ?? false;
+    document.getElementById('auto-threads').value = String(saved.threads ?? 1);
     document.getElementById('auto-effort').value = ['fast', 'normal', 'high'].includes(savedEffort)
       ? savedEffort
       : 'normal';
@@ -618,6 +621,9 @@ async function boot() {
       drilledOnly: document.getElementById('auto-drilled-only').checked,
       newLayout: document.getElementById('auto-new-layout').checked,
       extraRoom: Number(document.getElementById('auto-extra-room').value) || 0,
+      noStackedWires: document.getElementById('auto-no-stacked').checked,
+      standingParts: document.getElementById('auto-standing').checked,
+      threads: Number(document.getElementById('auto-threads').value) || 1,
     };
     const estimate = { fast: 500, normal: 2000, high: 6000 }[options.effort] ?? 2000;
     setSetting('layoutEffort', options.effort);
@@ -626,6 +632,9 @@ async function boot() {
       drilledOnly: options.drilledOnly,
       newLayout: options.newLayout,
       extraRoom: options.extraRoom,
+      noStackedWires: options.noStackedWires,
+      standingParts: options.standingParts,
+      threads: options.threads,
     });
     const controller = new AbortController();
     layoutController = controller;

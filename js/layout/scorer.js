@@ -1,8 +1,9 @@
 /**
  * Weighted score for a decoded board candidate. Lower is better.
  * @param {import('./types.js').LayoutMetrics} m
+ * @param {import('./types.js').LayoutOptions} [options]
  */
-export function scoreCandidate(m) {
+export function scoreCandidate(m, options = {}) {
   let score = 0;
   score += m.area * 0.22;
   score += m.rows ? m.rows * 0.9 : 0;
@@ -16,6 +17,7 @@ export function scoreCandidate(m) {
   score += m.invalidDrills * 12000;
   score += m.outOfBounds * 4000;
   score += m.wireOverPin * 700;
+  if (options.noStackedWires) score += m.wireStack * 1200;
 
   if (m.targetRows != null && m.neededRows > m.targetRows) {
     score += (m.neededRows - m.targetRows) * 3000;
@@ -42,5 +44,6 @@ export function scoreBreakdown(m) {
     pinCollision: m.pinCollision,
     invalidDrills: m.invalidDrills,
     outOfBounds: m.outOfBounds,
+    wireStack: m.wireStack,
   };
 }

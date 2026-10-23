@@ -6,6 +6,9 @@
  * @property {boolean} drilledOnly
  * @property {boolean} [newLayout]
  * @property {number} [extraRoom]
+ * @property {boolean} [noStackedWires]
+ * @property {boolean} [standingParts]
+ * @property {number} [threads]
  * @property {number} [targetRows]
  * @property {number} [targetCols]
  */
@@ -61,6 +64,7 @@
  * @property {number} invalidDrills
  * @property {number} outOfBounds
  * @property {number} wireOverPin
+ * @property {number} wireStack
  * @property {number|null} targetRows
  * @property {number|null} targetCols
  * @property {number} freeCount

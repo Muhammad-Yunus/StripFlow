@@ -100,7 +100,15 @@ export function decode(project, model, state, options) {
   const sizes = new Map();
   for (const id of free) {
     const comp = model.components.get(id);
-    const rot = state.rot[id] ?? 0;
+    let rot = state.rot[id] ?? 0;
+    if (options.standingParts && comp.flexible) {
+      const vertical = comp.rotOptions
+        .map((o, idx) => ({ idx, o }))
+        .filter((x) => x.o.h > x.o.w)
+        .sort((a, b) => b.o.h - a.o.h)[0];
+      if (vertical) rot = vertical.idx;
+    }
+    state.rot[id] = rot;
     const opt = comp.rotOptions[rot] ?? comp.rotOptions[0];
     sizes.set(id, { w: opt.w, h: opt.h });
   }
@@ -304,8 +312,10 @@ export function finalize(project, model, placements, options) {
   const wires = [];
   let wireLength = 0;
   let wireOverPin = 0;
+  let wireStack = 0;
   let linkCount = 0;
   let wireIndex = 0;
+  const usedWireHoles = new Set();
 
   const passesPin = (a, b) => {
     if (a.row !== b.row && a.col !== b.col) return false;
@@ -338,10 +348,16 @@ export function finalize(project, model, placements, options) {
           const dist = Math.abs(b.row - a.row) + Math.abs(b.col - a.col);
           const aligned = b.row === a.row || b.col === a.col;
           const crosses = passesPin(a, b);
-          const cost = dist + (aligned ? 20 : 0) + (crosses ? 400 : 0);
+          const stacked =
+            usedWireHoles.has(`${a.row},${a.col}`) || usedWireHoles.has(`${b.row},${b.col}`);
+          const cost =
+            dist +
+            (aligned ? 20 : 0) +
+            (crosses ? 400 : 0) +
+            (options.noStackedWires && stacked ? 900 : 0);
           if (cost < bestCost) {
             bestCost = cost;
-            best = { a, b, crosses };
+            best = { a, b, crosses, stacked };
           }
         }
       }
@@ -353,6 +369,9 @@ export function finalize(project, model, placements, options) {
         });
         wireLength += Math.abs(best.b.row - best.a.row) + Math.abs(best.b.col - best.a.col);
         if (best.crosses) wireOverPin += 1;
+        if (best.stacked) wireStack += 1;
+        usedWireHoles.add(`${best.a.row},${best.a.col}`);
+        usedWireHoles.add(`${best.b.row},${best.b.col}`);
       }
       prevGroup = group;
     }
@@ -433,12 +452,13 @@ export function finalize(project, model, placements, options) {
       invalidDrills,
       outOfBounds,
       wireOverPin,
+      wireStack,
       targetRows: options.targetRows ?? null,
       targetCols: options.targetCols ?? null,
       freeCount: placements.size,
     },
   };
-  candidate.score = scoreCandidate(candidate.metrics);
+  candidate.score = scoreCandidate(candidate.metrics, options);
   return candidate;
 }
 

@@ -582,15 +582,16 @@ for run in portfolio(effort):
 
 - `layout/worker.js` menerima `{ project, options, seed }`.
 - Mengirim `postMessage` progress throttled (≤ 10 Hz).
-- `layout/client.js` menerima `{ signal, onProgress }`; abort → reject `AbortError`, worker di-terminate dan di-recreate.
+- `layout/client.js` menerima `{ signal, onProgress }`; abort → reject `AbortError`, worker di-terminate. `threads` (1–4) menjalankan beberapa worker paralel dengan seed offset dan memilih skor terbaik; `LAYOUT_DONE` hanya di-emit sekali.
 - UI modal menampilkan progress bar + est countdown, `Run` disabled selama run, `Cancel`/Escape membatalkan tanpa mengubah board.
-- Setting auto-layout disimpan di localStorage `stripflow:layoutOptions` (`effort`, `drilledOnly`, `newLayout`, `extraRoom`); `layoutEffort` lama tetap ditulis untuk kompatibilitas.
+- Setting auto-layout disimpan di localStorage `stripflow:layoutOptions` (`effort`, `drilledOnly`, `newLayout`, `extraRoom`, `noStackedWires`, `standingParts`, `threads`); `layoutEffort` lama tetap ditulis untuk kompatibilitas.
 - `newLayout` menambahkan timestamp ke seed sehingga setiap run menghasilkan layout berbeda; `extraRoom` menambah baris/kolom kosong di luar kebutuhan packing (kecuali dimensi dikunci).
+- `noStackedWires` memberi penalti pada link wire yang memakai hole endpoint yang sudah dipakai wire lain; `standingParts` memaksa part fleksibel 2-pin yang belum ditempatkan ke orientasi vertikal.
 - Transfer data: kirim model minimal (komponen, pin, net), bukan seluruh project.
 
 ### 9.7 Determinisme
 
-PRNG mulberry32 dengan seed dari `project.meta.seed` + effort (dan timestamp bila `newLayout`); hasil dapat direproduksi selama `newLayout` mati.
+PRNG mulberry32 dengan seed dari `project.meta.seed` + effort (dan timestamp bila `newLayout`); hasil dapat direproduksi selama `newLayout` mati. Dengan `threads > 1`, tiap worker memakai seed `base + i * 2654435761` sehingga tetap deterministik.
 
 ---
 
