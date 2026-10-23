@@ -621,8 +621,9 @@ setSetting(key, value)
 ### 10.2 Auto-save
 
 - `autosave.js` subscribe ke `state:changed` slice `project`.
-- Debounce 1500 ms inactivity, plus flush pada `visibilitychange→hidden` dan `beforeunload`.
+- Debounce 1200 ms inactivity, plus flush pada `visibilitychange→hidden` dan `beforeunload`.
 - Status: `idle | saving | saved | error` → UI toolbar.
+- Recovery (PS-05): saat perubahan dijadwalkan, `sessionDirty` (`{projectId,name,at}`) ditulis ke localStorage dan dihapus setelah flush sukses. Jika masih ada saat boot untuk project yang sama, banner menampilkan waktu autosave terakhir dan tombol Dismiss.
 
 ### 10.3 Migrasi & Versioning
 

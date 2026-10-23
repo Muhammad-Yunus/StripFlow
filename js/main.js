@@ -51,6 +51,13 @@ boot().catch((err) => {
 
 async function boot() {
   const project = await loadInitialProject();
+  const interrupted = getSetting('sessionDirty', null);
+  setSetting('sessionDirty', null);
+  if (interrupted?.projectId === project.id) showRecoveryBanner(interrupted);
+  document.getElementById('recovery-dismiss').addEventListener('click', () => {
+    document.getElementById('recovery-banner').hidden = true;
+  });
+
   const store = new Store(project);
   const autosave = new AutoSave(store);
   await setMeta('lastOpenedProjectId', project.id);
@@ -775,6 +782,16 @@ async function boot() {
   render();
 
   globalThis.__stripflow = { store, autosave, schematicTools, boardTools, renderer: schematicRenderer };
+}
+
+function showRecoveryBanner(info) {
+  const banner = document.getElementById('recovery-banner');
+  const text = document.getElementById('recovery-text');
+  if (!banner || !text) return;
+  const when = info.at ? new Date(info.at).toLocaleString() : 'the previous session';
+  const name = info.name || 'this project';
+  text.textContent = `Recovered "${name}" from an interrupted session (autosaved ${when}). Review the board, then Save to keep it.`;
+  banner.hidden = false;
 }
 
 async function loadInitialProject() {

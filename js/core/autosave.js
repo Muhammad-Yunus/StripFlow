@@ -1,5 +1,5 @@
 import { bus, EVENTS } from './eventbus.js';
-import { putProject, setMeta } from './storage.js';
+import { putProject, setMeta, setSetting } from './storage.js';
 
 export class AutoSave {
   /** @param {import('./store.js').Store} store */
@@ -22,6 +22,12 @@ export class AutoSave {
 
   schedule() {
     this.pending = true;
+    const project = this.store.getProject();
+    setSetting('sessionDirty', {
+      projectId: project.id,
+      name: project.name,
+      at: Date.now(),
+    });
     this.setStatus('saving');
     clearTimeout(this.timer);
     this.timer = setTimeout(() => this.flush(), this.delay);
@@ -36,6 +42,7 @@ export class AutoSave {
     try {
       await putProject(project);
       await setMeta('lastOpenedProjectId', project.id);
+      if (!this.pending) setSetting('sessionDirty', null);
       this.lastSavedAt = Date.now();
       this.setStatus('saved');
     } catch (err) {
