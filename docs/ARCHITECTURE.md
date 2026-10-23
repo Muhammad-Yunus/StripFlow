@@ -366,7 +366,7 @@ Event standar:
 - Workspace grid: schematic | splitter | board | sidebar. Lebar schematic disimpan di CSS var `--split-left` dan localStorage `stripflow:split-left`; keyboard `ArrowLeft/Right` (±24 px, Shift ±96) dan `Home` (reset) saat splitter fokus.
 - Library item bisa diklik-lalu-klik canvas atau **drag & drop** ke canvas (`text/plain` = symbolId).
 - Double-click komponen/flag/label di schematic untuk rename inline; right-click net di sidebar untuk rename/recolor.
-- Board: drag body part untuk memindah, drag endpoint wire untuk memindah satu ujung, drag cut (drill/knife) untuk memindah posisi cut, `Delete` untuk menghapus selection, keyboard `C`/`W` untuk cut/wire.
+- Board: drag body part untuk memindah, drag endpoint wire untuk memindah satu ujung, drag cut (drill/knife) untuk memindah posisi cut, `Delete` untuk menghapus selection, keyboard `C`/`W` untuk cut/wire. Right-click part menampilkan menu kontekstual (rotate, lock, off-board, unplace); right-click area kosong menampilkan insert/delete row/col.
 - Custom component dibuat lewat modal `#modal-symbol`; disimpan di `project.customSymbols`, otomatis muncul di Library, dan bisa dihapus via context menu selama belum dipakai.
 
 ---

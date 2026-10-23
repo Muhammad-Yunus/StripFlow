@@ -8,8 +8,10 @@ import {
   insertCol,
   insertRow,
   placePart,
+  rotatePlaced,
   toggleDrill,
   toggleKnife,
+  unplacePart,
 } from './commands.js';
 import { placementForAnchor, placementFits } from './model.js';
 import { showContextMenu } from '../ui/menus.js';
@@ -354,6 +356,48 @@ export class BoardTools {
 
   openBoardMenu(cell, clientX, clientY) {
     const project = this.store.getProject();
+    const local = this.localPoint({ clientX, clientY });
+    const part = this.renderer.hitPart(project, this.store.getUI(), local.x, local.y);
+    if (part) {
+      this.store.setUI({ boardSelection: [part.compId] });
+      const comp = project.schematic.components.find((c) => c.id === part.compId);
+      const placed = findPlaced(project, part.compId);
+      showContextMenu(
+        [
+          {
+            label: 'Rotate 90° (R)',
+            action: () => this.store.apply('Rotate part', (draft) => rotatePlaced(draft, part.compId)),
+          },
+          {
+            label: placed?.locked ? 'Unlock placement' : 'Lock placement',
+            action: () =>
+              this.store.apply('Toggle part lock', (draft) => {
+                const p = draft.board.parts.find((x) => x.compId === part.compId);
+                if (p) p.locked = !p.locked;
+              }),
+          },
+          {
+            label: comp?.offBoard ? 'On-board part' : 'Off-board (pads only)',
+            action: () =>
+              this.store.apply('Toggle off-board', (draft) => {
+                const c = draft.schematic.components.find((x) => x.id === part.compId);
+                if (c) c.offBoard = !c.offBoard;
+              }),
+          },
+          {
+            label: 'Unplace from board',
+            danger: true,
+            action: () =>
+              this.store.apply('Unplace part', (draft) => unplacePart(draft, part.compId)),
+          },
+        ],
+        clientX,
+        clientY,
+      );
+      this.onRender();
+      return;
+    }
+
     const row = clamp(Math.floor(cell.row), 0, project.board.rows - 1);
     const col = clamp(Math.floor(cell.col), 0, project.board.cols - 1);
     showContextMenu(
