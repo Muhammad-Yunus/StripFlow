@@ -1,0 +1,21 @@
+.panel--schematic .canvas-wrap {
+  background:
+    radial-gradient(circle at 1px 1px, var(--color-grid) 1px, transparent 0) 0 0 / 12px 12px,
+    var(--color-surface);
+}
+
+.panel--schematic .canvas-wrap canvas {
+  cursor: default;
+}
+
+.panel--schematic.is-placing .canvas-wrap canvas {
+  cursor: copy;
+}
+
+.panel--schematic.is-wiring .canvas-wrap canvas {
+  cursor: crosshair;
+}
+
+.panel--schematic.is-panning .canvas-wrap canvas {
+  cursor: grabbing;
+}

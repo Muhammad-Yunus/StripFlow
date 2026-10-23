@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StripFlow — Stripboard Editor</title>
+    <meta name="description" content="Client-only stripboard and schematic editor with live conflict detection and auto-layout." />
+    <link rel="stylesheet" href="./css/main.css" />
+    <link rel="stylesheet" href="./css/schematic.css" />
+    <link rel="stylesheet" href="./css/board.css" />
+    <link rel="stylesheet" href="./css/dark.css" />
+    <link rel="stylesheet" href="./css/print.css" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <header class="toolbar" id="toolbar">
+        <div class="toolbar__group toolbar__brand">
+          <span class="brand__logo" aria-hidden="true">▦</span>
+          <span class="brand__name">StripFlow</span>
+          <input id="project-name" class="toolbar__name" value="Untitled" aria-label="Project name" />
+        </div>
+
+        <div class="toolbar__group">
+          <button class="btn" id="btn-new" title="New project">New</button>
+          <button class="btn" id="btn-open" title="Open project">Open</button>
+          <button class="btn" id="btn-save" title="Save now">Save</button>
+        </div>
+
+        <div class="toolbar__group">
+          <button class="btn btn--icon" id="btn-undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+          <button class="btn btn--icon" id="btn-redo" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
+        </div>
+
+        <div class="toolbar__group toolbar__spacer">
+          <span class="status" id="save-status" role="status">ready</span>
+        </div>
+
+        <div class="toolbar__group">
+          <button class="btn" id="btn-import" title="Import JSON">Import</button>
+          <button class="btn" id="btn-export" title="Export project JSON">Export</button>
+          <button class="btn" id="btn-export-netlist" title="Export KiCad netlist">Netlist</button>
+          <button class="btn" id="btn-auto" title="Auto-layout the board">Auto-layout</button>
+          <button class="btn" id="btn-print" title="Print 1:1 template">Print</button>
+          <button class="btn btn--icon" id="btn-theme" title="Toggle theme" aria-label="Toggle theme">◐</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="panel panel--schematic" id="schematic-panel">
+          <div class="panel__header">
+            <h2 class="panel__title">Schematic</h2>
+            <div class="panel__tools" id="schematic-tools">
+              <button class="toolbtn is-active" data-tool="select" title="Select (Esc)">Select</button>
+              <button class="toolbtn" data-tool="wire" title="Wire (W)">Wire</button>
+            </div>
+            <span class="panel__hint" id="schematic-hint">Click a part in the library, then click the canvas</span>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="schematic-canvas" aria-label="Schematic canvas"></canvas>
+          </div>
+        </section>
+
+        <div
+          class="splitter"
+          id="panel-splitter"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize schematic and board panels"
+          tabindex="0"
+        ></div>
+
+        <section class="panel panel--board" id="board-panel">
+          <div class="panel__header">
+            <h2 class="panel__title">Stripboard</h2>
+            <div class="panel__tools" id="board-tools">
+              <button class="toolbtn is-active" data-tool="select" title="Select (Esc)">Select</button>
+              <button class="toolbtn" data-tool="wire" title="Wire (W)">Wire</button>
+              <button class="toolbtn" data-tool="cut" title="Cut (C)">Cut</button>
+            </div>
+            <div class="panel__size">
+              <label>Rows <input id="board-rows" type="number" min="2" max="120" value="20" /></label>
+              <label>Cols <input id="board-cols" type="number" min="2" max="120" value="30" /></label>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="board-canvas" aria-label="Stripboard canvas"></canvas>
+          </div>
+        </section>
+
+        <aside class="sidebar" id="sidebar">
+          <nav class="sidebar__tabs" role="tablist">
+            <button class="sidebar__tab is-active" data-tab="library" role="tab">Library</button>
+            <button class="sidebar__tab" data-tab="nets" role="tab">Nets</button>
+            <button class="sidebar__tab" data-tab="parts" role="tab">Parts</button>
+            <button class="sidebar__tab" data-tab="conflicts" role="tab">Issues</button>
+          </nav>
+
+          <div class="sidebar__body">
+            <div class="sidebar__pane is-active" data-pane="library">
+              <p class="sidebar__lede">Click a symbol, then click the schematic canvas to place it.</p>
+              <div id="library-list" class="library"></div>
+              <p class="sidebar__lede sidebar__lede--muted">Custom components are saved with the project.</p>
+              <button class="btn btn--block" id="btn-custom-component">+ Create custom component</button>
+            </div>
+
+            <div class="sidebar__pane" data-pane="nets">
+              <div id="net-list" class="netlist"></div>
+            </div>
+
+            <div class="sidebar__pane" data-pane="parts">
+              <h3 class="sidebar__heading">Unplaced</h3>
+              <div id="unplaced-list" class="tray"></div>
+              <h3 class="sidebar__heading">Placed</h3>
+              <div id="placed-list" class="tray"></div>
+              <div id="properties" class="properties"></div>
+            </div>
+
+            <div class="sidebar__pane" data-pane="conflicts">
+              <div id="issue-list" class="issues"></div>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+    <dialog id="modal-open" class="modal">
+      <form method="dialog" class="modal__body">
+        <h2 class="modal__title">Open project</h2>
+        <div id="project-list" class="projectlist"></div>
+        <div class="modal__actions">
+          <button class="btn" value="cancel">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="modal-auto" class="modal">
+      <form method="dialog" class="modal__body" id="auto-form">
+        <h2 class="modal__title">Auto-layout</h2>
+        <p class="modal__lede">Places every unplaced/unlocked part, sizes the board (unless locked), and adds cuts and link wires.</p>
+        <label class="field">
+          <span>Effort</span>
+          <select id="auto-effort">
+            <option value="fast">Fast (~0.5 s)</option>
+            <option value="normal" selected>Normal (~2 s)</option>
+            <option value="high">High (~6 s)</option>
+          </select>
+        </label>
+        <label class="field field--inline">
+          <input type="checkbox" id="auto-lock-rows" /> Lock rows
+        </label>
+        <label class="field field--inline">
+          <input type="checkbox" id="auto-lock-cols" /> Lock cols
+        </label>
+        <label class="field field--inline">
+          <input type="checkbox" id="auto-drilled-only" /> Drilled cuts only
+        </label>
+        <div class="progress" id="auto-progress" hidden>
+          <div class="progress__bar" id="auto-progress-bar"></div>
+        </div>
+        <p class="modal__lede" id="auto-progress-text" hidden></p>
+        <div class="modal__actions">
+          <button type="button" class="btn" id="auto-cancel">Cancel</button>
+          <button type="button" class="btn btn--primary" id="auto-run">Run</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="modal-symbol" class="modal">
+      <form class="modal__body" id="symbol-form">
+        <h2 class="modal__title">Custom component</h2>
+        <p class="modal__lede">Define a reusable symbol with its own body size and pin grid offsets.</p>
+        <label class="field">
+          <span>Name</span>
+          <input id="symbol-label" required maxlength="40" placeholder="My module" />
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span>Ref prefix</span>
+            <input id="symbol-prefix" required maxlength="4" value="U" />
+          </label>
+          <label class="field">
+            <span>Default value</span>
+            <input id="symbol-value" maxlength="40" value="" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field">
+            <span>Width (cells)</span>
+            <input id="symbol-width" type="number" min="2" max="40" value="6" />
+          </label>
+          <label class="field">
+            <span>Height (cells)</span>
+            <input id="symbol-height" type="number" min="2" max="40" value="4" />
+          </label>
+        </div>
+        <h3 class="sidebar__heading">Pins</h3>
+        <div id="symbol-pins" class="symbol-pins"></div>
+        <button type="button" class="btn" id="symbol-add-pin">+ Add pin</button>
+        <p class="modal__lede" id="symbol-error" hidden></p>
+        <div class="modal__actions">
+          <button type="button" class="btn" id="symbol-cancel">Cancel</button>
+          <button type="submit" class="btn btn--primary" id="symbol-save">Create</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="print-root" class="print-root" aria-hidden="true"></div>
+
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>

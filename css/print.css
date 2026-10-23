@@ -1,0 +1,135 @@
+.print-root {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html,
+  body {
+    height: auto;
+    overflow: visible;
+    background: #fff;
+    color: #000;
+  }
+
+  #app,
+  .toast-stack,
+  .modal {
+    display: none !important;
+  }
+
+  .print-root {
+    display: block;
+  }
+
+  .print-page {
+    position: relative;
+    width: 210mm;
+    height: 297mm;
+    padding: 14mm 12mm;
+    background: #fff;
+    color: #000;
+    page-break-after: always;
+    overflow: hidden;
+  }
+
+  .print-page:last-child {
+    page-break-after: auto;
+  }
+
+  .print-title {
+    font-size: 11pt;
+    font-weight: 700;
+    margin: 0 0 2mm;
+  }
+
+  .print-subtitle {
+    font-size: 8pt;
+    color: #444;
+    margin: 0 0 4mm;
+  }
+
+  .print-board {
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  .print-ruler {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    margin-top: 4mm;
+    font-size: 6pt;
+  }
+
+  .print-ruler__ticks {
+    position: relative;
+    height: 8mm;
+    border-bottom: 0.3mm solid #000;
+  }
+
+  .print-ruler__ticks span {
+    position: absolute;
+    bottom: 0;
+    border-left: 0.3mm solid #000;
+    height: 3mm;
+    padding-left: 0.6mm;
+  }
+
+  .print-ruler__ticks span.major {
+    height: 6mm;
+  }
+
+  .print-meta {
+    position: absolute;
+    right: 12mm;
+    bottom: 8mm;
+    font-size: 7pt;
+    color: #444;
+    text-align: right;
+  }
+
+  .print-bom {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+  }
+
+  .print-bom th,
+  .print-bom td {
+    border: 0.2mm solid #999;
+    padding: 1.4mm 2mm;
+    text-align: left;
+  }
+
+  .print-bom th {
+    background: #eee;
+  }
+
+  .print-bom td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .print-wiring {
+    margin-top: 6mm;
+  }
+
+  .print-qr {
+    position: absolute;
+    right: 12mm;
+    bottom: 10mm;
+    width: 22mm;
+    height: 22mm;
+  }
+
+  .print-cut-legend {
+    margin-top: 3mm;
+    font-size: 7.5pt;
+    color: #000;
+  }
+}

@@ -1,0 +1,23 @@
+.panel--board .canvas-wrap {
+  background: var(--color-surface-2);
+}
+
+.panel--board .canvas-wrap canvas {
+  cursor: default;
+}
+
+.panel--board.is-cutting .canvas-wrap canvas {
+  cursor: cell;
+}
+
+.panel--board.is-wiring .canvas-wrap canvas {
+  cursor: crosshair;
+}
+
+.panel--board.is-placing .canvas-wrap canvas {
+  cursor: copy;
+}
+
+.panel--board.is-panning .canvas-wrap canvas {
+  cursor: grabbing;
+}
