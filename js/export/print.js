@@ -10,12 +10,15 @@ const RENDER_SCALE = 4;
  * @param {import('../core/types.js').Project} project
  * @param {ReturnType<import('../board/strips.js').analyzeBoard>} analysis
  * @param {ReturnType<import('../schematic/netlist.js').computeNets>} nets
+ * @param {{labels?:boolean,bom?:boolean,mono?:boolean}} [options]
  */
-export function printProject(project, analysis, nets) {
+export function printProject(project, analysis, nets, options = {}) {
+  const { labels = true, bom = true, mono = false } = options;
   const root = document.getElementById('print-root');
   if (!root) return;
   root.textContent = '';
   root.setAttribute('aria-hidden', 'false');
+  root.classList.toggle('print-root--mono', mono);
 
   const boardMm = {
     w: project.board.cols * HOLE_PITCH_MM,
@@ -25,7 +28,7 @@ export function printProject(project, analysis, nets) {
   root.appendChild(
     makePage([
       pageTitle(project.name, 'Component side — lay this sheet on the board and push the leads through.'),
-      boardImage(project, analysis, nets, { mirror: false, boardMm, labels: true }),
+      boardImage(project, analysis, nets, { mirror: false, boardMm, labels }),
       ruler(40),
       note(`Scale check: each hole pitch is ${HOLE_PITCH_MM} mm. Print at 100% (no “fit to page”).`),
     ]),
@@ -40,7 +43,7 @@ export function printProject(project, analysis, nets) {
     ]),
   );
 
-  root.appendChild(makeBomPage(project, nets));
+  if (bom) root.appendChild(makeBomPage(project, nets));
 
   setTimeout(() => {
     window.print();

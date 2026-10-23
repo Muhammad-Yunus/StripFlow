@@ -146,7 +146,7 @@ Prioritas memakai MoSCoW: **M**ust, **S**hould, **C**ould, **W**on't (v1).
 | PE-02 | Component sheet | M | Sisi atas; posisi part & label. |
 | PE-03 | Cut sheet mirrored | M | Sisi copper; tiap cut ditandai ✕; mirror horizontal. |
 | PE-04 | BOM | M | Qty, value, ref; dikelompokkan (value/symbolId/packageId); off-board part punya tabel wiring. |
-| PE-05 | Opsi print | S | Warna / B&W; label ref & pin; QR code view/edit. |
+| PE-05 | Opsi print | S | Warna / B&W; label ref & pin; BOM + wiring off-board; QR code view/edit. |
 | PE-06 | Export JSON | M | Download seluruh project; round-trip import identik. |
 | PE-07 | Import JSON | M | Validasi versi; error jelas jika korup. |
 | PE-08 | Export KiCad netlist | S | XML netlist dengan part, value, pin, net; footprint library zip. |

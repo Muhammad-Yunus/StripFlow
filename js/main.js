@@ -102,11 +102,7 @@ async function boot() {
       downloadNetlist(latest.project, latest.nets);
       toast('Netlist exported', 'ok');
     },
-    onPrint: () => {
-      const project = store.getProject();
-      const nets = computeNets(project.schematic);
-      printProject(project, analyzeBoard(project, nets), nets);
-    },
+    onPrint: () => openPrintDialog(),
     onAuto: () => openAutoDialog(),
     onTheme: () => toolbar.setTheme(toggleTheme(currentTheme)),
   });
@@ -152,6 +148,11 @@ async function boot() {
       loadProjectById(id);
     }
   });
+
+  document.getElementById('print-cancel').addEventListener('click', () => {
+    document.getElementById('modal-print').close('cancel');
+  });
+  document.getElementById('print-run').addEventListener('click', () => runPrint());
 
   document.getElementById('btn-custom-component').addEventListener('click', () => openSymbolDialog());
   document.getElementById('symbol-add-pin').addEventListener('click', () => addPinRow());
@@ -317,6 +318,27 @@ async function boot() {
       }
     });
     input.click();
+  }
+
+  function openPrintDialog() {
+    const saved = getSetting('printOptions', {}) ?? {};
+    document.getElementById('print-labels').checked = saved.labels ?? true;
+    document.getElementById('print-bom').checked = saved.bom ?? true;
+    document.getElementById('print-mono').checked = saved.mono ?? false;
+    document.getElementById('modal-print').showModal();
+  }
+
+  function runPrint() {
+    const options = {
+      labels: document.getElementById('print-labels').checked,
+      bom: document.getElementById('print-bom').checked,
+      mono: document.getElementById('print-mono').checked,
+    };
+    setSetting('printOptions', options);
+    document.getElementById('modal-print').close('print');
+    const project = store.getProject();
+    const nets = computeNets(project.schematic);
+    printProject(project, analyzeBoard(project, nets), nets, options);
   }
 
   function openSymbolDialog() {

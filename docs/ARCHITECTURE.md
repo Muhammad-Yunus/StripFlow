@@ -237,7 +237,7 @@ Semua entity serializable (plain object), tanpa `class` dengan state tersembunyi
 Catatan:
 - `netStyles` menyimpan override warna dari UI sidebar; `computeNets()` mengisinya ke `Net.color`. Rename net memindahkan style lama ke nama baru dan menulis ulang semua flag/label (atau menambah label di pin pertama untuk auto-net).
 - Custom component (`customSymbols`) memakai `SymbolDef` yang sama, dengan `custom: true`; id berawalan `sym_`. Pin offset relatif terhadap origin, integer, dan harus berada di dalam body. Dibuat lewat modal dan dapat dihapus bila belum dipakai.
-- `SComponent.offBoard`: komponen eksternal; board menggambar solder pad (tanpa body solid), print menambahkan tabel off-board wiring. Auto-layout saat ini masih memperlakukan off-board seperti part biasa.
+- `SComponent.offBoard`: komponen eksternal; board menggambar solder pad (tanpa body solid), print menambahkan tabel off-board wiring. Auto-layout hanya mempertahankan pad yang sudah ditempatkan dan tidak memindahkannya; off-board yang belum ditempatkan diabaikan.
 - Package `flexible` (resistor, cap, diode, LED, switch, inductor, thermistor, fuse, LDR) memakai `leadsSpan` untuk pin fleksibel.
 
 ### 4.3 Board
@@ -343,8 +343,8 @@ Reducer per domain (`schematic`, `board`, `project`) menerima `(state, payload) 
 
 - **Snapshot-based** via `structuredClone` di `core/store.js` (deviasi dari rencana patch-based; lebih sederhana dan cukup untuk ukuran project target).
 - Stack: `undo[]`, `redo[]` berisi `{ type, snapshot, label, timestamp }`.
-- Command transient (hover, drag preview) memakai `store.transient()` dan tidak masuk undo.
-- Batas default 200 entri; entry besar di-coalesce (drag move → satu entry saat pointerup).
+- Command transient (hover, drag preview) di luar transaksi memakai `store.transient()` dan tidak masuk undo; di dalam transaksi (`beginTransaction`) perubahan transient menandai transaksi dirty dan masuk undo satu entry saat `endTransaction`.
+- Batas default 200 entri; entry besar di-coalesce (drag part/wire/cut → satu entry saat pointerup).
 - Auto-layout ditempatkan sebagai satu entry undo.
 
 ### 5.4 Event Bus
@@ -366,7 +366,7 @@ Event standar:
 - Workspace grid: schematic | splitter | board | sidebar. Lebar schematic disimpan di CSS var `--split-left` dan localStorage `stripflow:split-left`; keyboard `ArrowLeft/Right` (±24 px, Shift ±96) dan `Home` (reset) saat splitter fokus.
 - Library item bisa diklik-lalu-klik canvas atau **drag & drop** ke canvas (`text/plain` = symbolId).
 - Double-click komponen/flag/label di schematic untuk rename inline; right-click net di sidebar untuk rename/recolor.
-- Board: drag body part untuk memindah, drag endpoint wire untuk memindah satu ujung, `Delete` untuk menghapus selection, keyboard `C`/`W` untuk cut/wire.
+- Board: drag body part untuk memindah, drag endpoint wire untuk memindah satu ujung, drag cut (drill/knife) untuk memindah posisi cut, `Delete` untuk menghapus selection, keyboard `C`/`W` untuk cut/wire.
 - Custom component dibuat lewat modal `#modal-symbol`; disimpan di `project.customSymbols`, otomatis muncul di Library, dan bisa dihapus via context menu selama belum dipakai.
 
 ---
@@ -656,7 +656,8 @@ Round-trip: `parse(serialize(p))` harus deep-equal dengan `p` (kecuali `meta.mod
 
 ### 11.3 Print
 
-- Print DOM dibangun di `<div id="print-root">` (tersembunyi di layar) dan diaktifkan lewat `@media print`.
+- Opsi print (`#modal-print`) disimpan di settings `printOptions`: `labels` (ref & pin), `bom` (tabel BOM + off-board wiring), `mono` (grayscale). `printProject(project, analysis, nets, { labels, bom, mono })` membangun DOM di `#print-root`.
+- Print DOM dibangun di `<div id="print-root">` (tersembunyi di layar) dan diaktifkan lewat `@media print`; `print-root--mono` memaksa grayscale.
 - Halaman:
   1. Component sheet (skala 1:1, semua part & label).
   2. Cut sheet (mirror horizontal, ✕ pada cut).

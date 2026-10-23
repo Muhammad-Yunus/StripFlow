@@ -28,6 +28,7 @@ export class BoardTools {
     this.right = null;
     this.wire = null;
     this.wireDrag = null;
+    this.cutDrag = null;
     this.pointer = null;
     this._bound = {
       down: (e) => this.pointerDown(e),
@@ -122,7 +123,13 @@ export class BoardTools {
     }
     const cut = this.renderer.hitCut(project, ui, local.x, local.y);
     if (cut) {
-      this.store.setUI({ boardSelection: this.toggleSelection(ui.boardSelection, cut.id, e) });
+      const selection = this.toggleSelection(ui.boardSelection, cut.id, e);
+      this.store.setUI({ boardSelection: selection });
+      if (selection.includes(cut.id)) {
+        this.store.beginTransaction('Move cut');
+        this.cutDrag = { cutId: cut.id, type: cut.type };
+        this.canvas.setPointerCapture(e.pointerId);
+      }
       this.onRender();
       return;
     }
@@ -170,6 +177,31 @@ export class BoardTools {
         });
         this.onRender();
       }
+      return;
+    }
+
+    if (this.cutDrag) {
+      const project = this.store.getProject();
+      const cut = project.board.cuts.find((c) => c.id === this.cutDrag.cutId);
+      if (!cut) return;
+      const target = this.cutTarget(cut.type, local.x, local.y, cell);
+      if (!target) return;
+      if (target.row === cut.row && target.col === cut.col) return;
+      const taken = project.board.cuts.some(
+        (c) =>
+          c.id !== cut.id &&
+          c.type === cut.type &&
+          c.row === target.row &&
+          c.col === target.col,
+      );
+      if (taken) return;
+      this.store.transient((draft) => {
+        const c = draft.board.cuts.find((x) => x.id === this.cutDrag.cutId);
+        if (!c) return;
+        c.row = target.row;
+        c.col = target.col;
+      });
+      this.onRender();
       return;
     }
 
@@ -224,6 +256,12 @@ export class BoardTools {
       this.onRender();
       return;
     }
+    if (this.cutDrag) {
+      this.store.endTransaction();
+      this.cutDrag = null;
+      this.onRender();
+      return;
+    }
     if (this.drag) {
       this.store.endTransaction();
       this.drag = null;
@@ -244,6 +282,20 @@ export class BoardTools {
       y: local.y - world.row * BOARD_HOLE * zoom,
     };
     this.store.setView('board', { pan, zoom });
+  }
+
+  cutTarget(type, px, py, cell) {
+    const project = this.store.getProject();
+    if (type === 'drill') {
+      const hole = this.renderer.hitHole(px, py, this.store.getUI());
+      return hole ? { row: hole.row, col: hole.col } : null;
+    }
+    const row = Math.round(cell.row - 0.5);
+    if (row < 0 || row >= project.board.rows) return null;
+    if (Math.abs(cell.row - (row + 0.5)) > 0.42) return null;
+    const col = Math.round(cell.col) - 1;
+    if (col < 0 || col >= project.board.cols - 1) return null;
+    return { row, col };
   }
 
   handleCut(px, py, cell) {
@@ -344,6 +396,12 @@ export class BoardTools {
     if (this.wire) {
       this.wire = null;
       this.onStatus('');
+      this.onRender();
+      return true;
+    }
+    if (this.cutDrag) {
+      this.store.cancelTransaction();
+      this.cutDrag = null;
       this.onRender();
       return true;
     }

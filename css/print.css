@@ -22,7 +22,11 @@
     display: none !important;
   }
 
-  .print-root {
+.print-root--mono .print-page {
+  filter: grayscale(1);
+}
+
+.print-root {
     display: block;
   }
 

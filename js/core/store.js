@@ -60,6 +60,7 @@ export class Store {
     const draft = structuredClone(this.state.project);
     mutate(draft);
     draft.meta.modifiedAt = Date.now();
+    if (this.tx) this.tx.dirty = true;
     this.commitProject(draft);
   }
 

@@ -24,8 +24,11 @@ export function buildModel(project, nets) {
   for (const comp of comps) {
     const symbol = getSymbol(comp.symbolId, project.customSymbols);
     if (!symbol) continue;
-    const flexible = isFlexible(comp.symbolId) && symbol.pins.length === 2;
     const existing = placedById.get(comp.id);
+    // Off-board parts only contribute their existing solder pads; they are
+    // never packed or moved by the router.
+    if (comp.offBoard && !existing) continue;
+    const flexible = isFlexible(comp.symbolId) && symbol.pins.length === 2;
     const leadsSpan = existing?.leadsSpan || 4;
     const rots = ROTATIONS.map((rot) => {
       const placed = {
@@ -68,7 +71,8 @@ export function buildModel(project, nets) {
       rotOptions: rots,
       flexible,
       packageId: existing?.packageId ?? symbol.packageId ?? '',
-      locked: Boolean(existing?.locked),
+      locked: Boolean(existing?.locked) || Boolean(comp.offBoard),
+      offBoard: Boolean(comp.offBoard),
       existing,
     });
   }

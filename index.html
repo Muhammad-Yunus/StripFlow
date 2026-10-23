@@ -167,6 +167,26 @@
       </form>
     </dialog>
 
+    <dialog id="modal-print" class="modal">
+      <form method="dialog" class="modal__body" id="print-form">
+        <h2 class="modal__title">Print template</h2>
+        <p class="modal__lede">Print at 100% scale; use the calibration ruler on each sheet.</p>
+        <label class="field field--inline">
+          <input type="checkbox" id="print-labels" checked /> Component labels
+        </label>
+        <label class="field field--inline">
+          <input type="checkbox" id="print-bom" checked /> BOM and off-board wiring
+        </label>
+        <label class="field field--inline">
+          <input type="checkbox" id="print-mono" /> Black &amp; white
+        </label>
+        <div class="modal__actions">
+          <button type="button" class="btn" id="print-cancel">Cancel</button>
+          <button type="button" class="btn btn--primary" id="print-run">Print</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog id="modal-symbol" class="modal">
       <form class="modal__body" id="symbol-form">
         <h2 class="modal__title">Custom component</h2>
