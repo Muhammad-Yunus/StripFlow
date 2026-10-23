@@ -149,8 +149,8 @@ Prioritas memakai MoSCoW: **M**ust, **S**hould, **C**ould, **W**on't (v1).
 | PE-05 | Opsi print | S | Warna / B&W; label ref & pin; BOM + wiring off-board; QR code view/edit. |
 | PE-06 | Export JSON | M | Download seluruh project; round-trip import identik. |
 | PE-07 | Import JSON | M | Validasi versi; error jelas jika korup. |
-| PE-08 | Export KiCad netlist | S | XML netlist dengan part, value, pin, net; footprint library zip. |
-| PE-09 | Export gambar | C | PNG/SVG board & skema. |
+| PE-08 | Export KiCad netlist | S | XML netlist dengan part, value, pin, net; footprint library zip (`StripFlow.pretty`). |
+| PE-09 | Export gambar | C | PNG/SVG board & skema (view board/schematic/both, skala 1–4x, label & grid opsional). |
 
 ### 3.5 Persistence & History
 

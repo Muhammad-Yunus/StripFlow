@@ -651,8 +651,12 @@ Round-trip: `parse(serialize(p))` harus deep-equal dengan `p` (kecuali `meta.mod
 ### 11.2 KiCad Netlist
 
 - Generate netlist XML (KiCad 6/7 format): `components`, `nets`, pin `num`/`name`, `value`, `footprint`.
-- Mapping footprint: tabel `data/packages.js` → nama footprint KiCad; sisanya disertakan dalam library zip.
-- Output berupa `.zip` bila ada custom footprint; selain itu satu file `.net`.
+- Mapping footprint: tabel `data/packages.js` → nama footprint KiCad; custom symbol memakai `StripFlow:StripFlow_<label>` dan disertakan dalam library zip (`js/export/kicad-footprints.js`, ZIP tanpa dependency).
+- Output berupa `.zip` bila ada custom footprint; selain itu satu file `.net`. Tombol **Footprints** mengunduh `StripFlow.pretty` berisi `.kicad_mod` + README.
+
+### 11.2b Image
+
+- `exportImage(project, { view, format, scale, labels, grid })` merender schematic/board/both ke canvas offscreen lalu PNG (Blob) atau SVG (PNG di-embed via data URL). Board image mengikuti pitch 2.54 mm, net color, cut, wire, dan off-board pad; schematic memakai grid 24 px.
 
 ### 11.3 Print
 

@@ -30,8 +30,15 @@ function esc(value) {
  * @param {import('../core/types.js').Project} project
  * @param {ReturnType<import('../schematic/netlist.js').computeNets>} nets
  */
+function customFootprintName(symbol) {
+  return `StripFlow:StripFlow_${(symbol.label || symbol.id).replace(/[^A-Za-z0-9_]+/g, '_')}`;
+}
+
 export function buildNetlist(project, nets) {
   const stamp = new Date().toISOString();
+  const customFootprints = new Map(
+    (project.customSymbols || []).map((symbol) => [symbol.id, customFootprintName(symbol)]),
+  );
   const lines = [];
   lines.push('<?xml version="1.0" encoding="UTF-8"?>');
   lines.push('<export version="E">');
@@ -43,7 +50,8 @@ export function buildNetlist(project, nets) {
   lines.push('  <components>');
   for (const comp of project.schematic.components) {
     if (comp.excluded) continue;
-    const footprint = FOOTPRINTS[comp.symbolId] ?? 'StripFlow:Custom';
+    const footprint =
+      FOOTPRINTS[comp.symbolId] ?? customFootprints.get(comp.symbolId) ?? 'StripFlow:Custom';
     lines.push(`    <comp ref="${esc(comp.ref)}">`);
     lines.push(`      <value>${esc(comp.value)}</value>`);
     lines.push(`      <footprint>${esc(footprint)}</footprint>`);

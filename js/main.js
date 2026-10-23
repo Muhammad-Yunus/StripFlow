@@ -28,6 +28,7 @@ import { downloadProject, deserializeProject, normalize, safeName } from './expo
 import { downloadNetlist } from './export/netlist.js';
 import { printProject } from './export/print.js';
 import { exportImage } from './export/image.js';
+import { downloadFootprintLib } from './export/kicad-footprints.js';
 
 globalThis.addEventListener('error', (e) => {
   console.error('[stripflow] uncaught', e.error ?? e.message);
@@ -186,6 +187,11 @@ async function boot() {
   document.getElementById('btn-export-netlist').addEventListener('click', () => {
     downloadNetlist(latest.project, latest.nets);
     toast('Netlist exported', 'ok');
+  });
+
+  document.getElementById('btn-export-footprints').addEventListener('click', () => {
+    const ok = downloadFootprintLib(latest.project);
+    toast(ok ? 'Footprint library exported' : 'No custom components to export', ok ? 'ok' : 'error');
   });
 
   store.subscribe(() => {
