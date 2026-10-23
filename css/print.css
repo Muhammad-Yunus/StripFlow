@@ -127,6 +127,16 @@
     position: absolute;
     right: 12mm;
     bottom: 10mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1mm;
+    font-size: 6pt;
+    color: #444;
+  }
+
+  .print-qr canvas {
+    display: block;
     width: 22mm;
     height: 22mm;
   }

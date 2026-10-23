@@ -662,7 +662,7 @@ Round-trip: `parse(serialize(p))` harus deep-equal dengan `p` (kecuali `meta.mod
 
 ### 11.3 Print
 
-- Opsi print (`#modal-print`) disimpan di settings `printOptions`: `labels` (ref & pin), `bom` (tabel BOM + off-board wiring), `mono` (grayscale). `printProject(project, analysis, nets, { labels, bom, mono })` membangun DOM di `#print-root`.
+- Opsi print (`#modal-print`) disimpan di settings `printOptions`: `labels` (ref & pin), `bom` (tabel BOM + off-board wiring), `mono` (grayscale), `qr` (ringkasan project). `printProject(project, analysis, nets, { labels, bom, mono, qr })` membangun DOM di `#print-root`.
 - Print DOM dibangun di `<div id="print-root">` (tersembunyi di layar) dan diaktifkan lewat `@media print`; `print-root--mono` memaksa grayscale.
 - Halaman:
   1. Component sheet (skala 1:1, semua part & label).
@@ -670,7 +670,7 @@ Round-trip: `parse(serialize(p))` harus deep-equal dengan `p` (kecuali `meta.mod
   3. BOM (+ tabel wiring off-board). BOM menggabungkan baris dengan `value + symbolId + packageId` sama dan menampilkan label package.
 - Skala: konstanta `PX_PER_MM = 96/25.4`; CSS memakai `mm` untuk ukuran halaman & posisi absolut.
 - Calibration ruler 10 mm & 1 inci di setiap lembar.
-- QR opsional berisi ringkasan project (bukan seluruh JSON bila terlalu besar).
+- QR opsional berisi ringkasan project (nama, dimensi, jumlah part/net/cut/wire, issue) di component sheet; dibuat `js/export/qr.js` di atas `qrcode-generator` (MIT, vendored di `js/export/qrcode-generator.js`).
 
 ---
 

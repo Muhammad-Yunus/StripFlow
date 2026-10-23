@@ -342,6 +342,7 @@ async function boot() {
     document.getElementById('print-labels').checked = saved.labels ?? true;
     document.getElementById('print-bom').checked = saved.bom ?? true;
     document.getElementById('print-mono').checked = saved.mono ?? false;
+    document.getElementById('print-qr').checked = saved.qr ?? false;
     document.getElementById('modal-print').showModal();
   }
 
@@ -350,6 +351,7 @@ async function boot() {
       labels: document.getElementById('print-labels').checked,
       bom: document.getElementById('print-bom').checked,
       mono: document.getElementById('print-mono').checked,
+      qr: document.getElementById('print-qr').checked,
     };
     setSetting('printOptions', options);
     document.getElementById('modal-print').close('print');

@@ -237,7 +237,7 @@ Jalankan via editor atau `npx tsc -p jsconfig.json --noEmit` (TypeScript hanya s
 
 | Paket | Jenis | Lisensi | Ukuran | Catatan |
 |---|---|---|---|---|
-| `qr.js` (vendored) | runtime | MIT | ~5 KB | dipakai hanya untuk print QR |
+| `qrcode-generator` (vendored) | runtime | MIT | ~20 KB raw / ~7.5 KB gzip | `js/export/qrcode-generator.js`; hanya dipakai print QR |
 | ESLint + plugins | dev | MIT | — | lint |
 | Prettier | dev | MIT | — | format |
 | TypeScript (checker) | dev | Apache-2.0 | — | `--noEmit` |

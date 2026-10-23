@@ -2,6 +2,7 @@ import { HOLE_PITCH_MM, PX_PER_MM } from '../core/geometry.js';
 import { findComponent, partBounds } from '../board/model.js';
 import { getSymbol } from '../schematic/library.js';
 import { PACKAGES } from '../board/packages.js';
+import { projectQrText, renderQr } from './qr.js';
 
 const RENDER_SCALE = 4;
 
@@ -10,10 +11,10 @@ const RENDER_SCALE = 4;
  * @param {import('../core/types.js').Project} project
  * @param {ReturnType<import('../board/strips.js').analyzeBoard>} analysis
  * @param {ReturnType<import('../schematic/netlist.js').computeNets>} nets
- * @param {{labels?:boolean,bom?:boolean,mono?:boolean}} [options]
+ * @param {{labels?:boolean,bom?:boolean,mono?:boolean,qr?:boolean}} [options]
  */
 export function printProject(project, analysis, nets, options = {}) {
-  const { labels = true, bom = true, mono = false } = options;
+  const { labels = true, bom = true, mono = false, qr = false } = options;
   const root = document.getElementById('print-root');
   if (!root) return;
   root.textContent = '';
@@ -25,14 +26,14 @@ export function printProject(project, analysis, nets, options = {}) {
     h: project.board.rows * HOLE_PITCH_MM,
   };
 
-  root.appendChild(
-    makePage([
-      pageTitle(project.name, 'Component side — lay this sheet on the board and push the leads through.'),
-      boardImage(project, analysis, nets, { mirror: false, boardMm, labels }),
-      ruler(40),
-      note(`Scale check: each hole pitch is ${HOLE_PITCH_MM} mm. Print at 100% (no “fit to page”).`),
-    ]),
-  );
+  const componentPage = [
+    pageTitle(project.name, 'Component side �?" lay this sheet on the board and push the leads through.'),
+    boardImage(project, analysis, nets, { mirror: false, boardMm, labels }),
+    ruler(40),
+    note(`Scale check: each hole pitch is ${HOLE_PITCH_MM} mm. Print at 100% (no �?ofit to page�??).`),
+  ];
+  if (qr) componentPage.push(qrBlock(project, analysis, nets));
+  root.appendChild(makePage(componentPage));
 
   root.appendChild(
     makePage([
@@ -48,6 +49,23 @@ export function printProject(project, analysis, nets, options = {}) {
   setTimeout(() => {
     window.print();
   }, 60);
+}
+
+/**
+ * @param {import('../core/types.js').Project} project
+ * @param {ReturnType<import('../board/strips.js').analyzeBoard>} analysis
+ * @param {ReturnType<import('../schematic/netlist.js').computeNets>} nets
+ */
+function qrBlock(project, analysis, nets) {
+  const wrap = document.createElement('div');
+  wrap.className = 'print-qr';
+  const canvas = renderQr(projectQrText(project, analysis, nets));
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label', 'Project summary QR code');
+  const caption = document.createElement('span');
+  caption.textContent = 'Project summary';
+  wrap.append(canvas, caption);
+  return wrap;
 }
 
 function makePage(children) {
