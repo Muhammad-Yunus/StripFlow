@@ -111,7 +111,8 @@ async function boot() {
       toast('Project exported', 'ok');
     },
     onExportNetlist: () => {
-      downloadNetlist(latest.project, latest.nets);
+      const project = store.getProject();
+      downloadNetlist(project, computeNets(project.schematic));
       toast('Netlist exported', 'ok');
     },
     onPrint: () => openPrintDialog(),
@@ -195,12 +196,13 @@ async function boot() {
   });
 
   document.getElementById('btn-export-netlist').addEventListener('click', () => {
-    downloadNetlist(latest.project, latest.nets);
+    const project = store.getProject();
+    downloadNetlist(project, computeNets(project.schematic));
     toast('Netlist exported', 'ok');
   });
 
   document.getElementById('btn-export-footprints').addEventListener('click', () => {
-    const ok = downloadFootprintLib(latest.project);
+    const ok = downloadFootprintLib(store.getProject());
     toast(ok ? 'Footprint library exported' : 'No custom components to export', ok ? 'ok' : 'error');
   });
 
