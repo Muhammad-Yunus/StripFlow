@@ -46,6 +46,11 @@ html[data-theme="dark"] .panel--schematic .canvas-wrap {
     var(--color-surface);
 }
 
+html[data-theme="dark"] .toolbtn.is-active {
+  background: var(--color-accent);
+  color: #343826;
+}
+
 html[data-theme="dark"] .btn--primary {
   background: #E5E793;
   border-color: #8B8D08;
