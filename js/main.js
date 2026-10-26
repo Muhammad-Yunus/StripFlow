@@ -588,17 +588,19 @@ async function boot() {
   }
 
   function openAutoDialog() {
-    document.getElementById('auto-lock-rows').checked = false;
-    document.getElementById('auto-lock-cols').checked = false;
+    const project = store.getProject();
+    document.getElementById('auto-lock-rows').checked = project.board.options?.rowsLocked ?? false;
+    document.getElementById('auto-lock-cols').checked = project.board.options?.colsLocked ?? false;
     const saved = getSetting('layoutOptions', {}) ?? {};
     const savedEffort = saved.effort ?? getSetting('layoutEffort', 'normal');
     document.getElementById('auto-drilled-only').checked =
-      saved.drilledOnly ?? store.getProject().board.options?.drilledCutsOnly ?? false;
+      saved.drilledOnly ?? project.board.options?.drilledCutsOnly ?? false;
     document.getElementById('auto-new-layout').checked = saved.newLayout ?? false;
     document.getElementById('auto-extra-room').value = String(saved.extraRoom ?? 0);
     document.getElementById('auto-no-stacked').checked = saved.noStackedWires ?? false;
     document.getElementById('auto-standing').checked = saved.standingParts ?? false;
     document.getElementById('auto-threads').value = String(saved.threads ?? 1);
+    document.getElementById('auto-seed').value = project.meta?.seed ? String(project.meta.seed) : '';
     document.getElementById('auto-effort').value = ['fast', 'normal', 'high'].includes(savedEffort)
       ? savedEffort
       : 'normal';
@@ -616,6 +618,15 @@ async function boot() {
     const progress = document.getElementById('auto-progress');
     const bar = document.getElementById('auto-progress-bar');
     const progressText = document.getElementById('auto-progress-text');
+    const seedInput = document.getElementById('auto-seed').value.trim();
+    const seedNum = seedInput === '' ? null : Number(seedInput);
+    if (seedInput !== '' && Number.isFinite(seedNum)) {
+      store.apply('Set layout seed', (draft) => {
+        draft.meta.seed = Math.abs(Math.trunc(seedNum));
+      });
+    } else if (seedInput !== '') {
+      toast('Seed must be a number; using project seed', 'info');
+    }
     const options = {
       effort: document.getElementById('auto-effort').value,
       lockRows: document.getElementById('auto-lock-rows').checked,
@@ -637,6 +648,11 @@ async function boot() {
       noStackedWires: options.noStackedWires,
       standingParts: options.standingParts,
       threads: options.threads,
+    });
+    store.apply('Set board lock flags', (draft) => {
+      if (!draft.board.options) draft.board.options = {};
+      draft.board.options.rowsLocked = options.lockRows;
+      draft.board.options.colsLocked = options.lockCols;
     });
     const controller = new AbortController();
     layoutController = controller;
