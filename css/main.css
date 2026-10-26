@@ -429,14 +429,14 @@ select {
 }
 
 .sidebar__tab svg {
-  width: 9px;
-  height: 9px;
+  width: 14px;
+  height: 14px;
   display: block;
 }
 
 .panel__title svg {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   display: block;
 }
 
