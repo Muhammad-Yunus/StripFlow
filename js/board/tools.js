@@ -497,7 +497,8 @@ export class BoardTools {
     if (!btn || !this.floating || this.floating.hidden) return;
     const action = btn.dataset.action;
     const project = this.store.getProject();
-    const id = project.ui.boardSelection[0];
+    const ui = this.store.getUI();
+    const id = (ui.boardSelection ?? [])[0];
     if (!id) return;
     const placed = findPlaced(project, id);
     const comp = project.schematic.components.find((c) => c.id === id);

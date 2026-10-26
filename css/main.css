@@ -880,6 +880,15 @@ select {
   padding: 3px 9px;
 }
 
+.workspace {
+    grid-template-columns: minmax(0, var(--split-left, 1fr)) 5px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    display: none;
+  }
+}
+
 .board-floating {
   position: fixed;
   z-index: 25;
@@ -892,6 +901,7 @@ select {
   background: var(--color-surface);
   box-shadow: var(--shadow-2);
   transform: translateX(-50%);
+  white-space: nowrap;
 }
 
 .board-floating__btn {
@@ -915,14 +925,6 @@ select {
   display: none !important;
 }
 
-.workspace {
-    grid-template-columns: minmax(0, var(--split-left, 1fr)) 5px minmax(0, 1fr);
-  }
-
-  .sidebar {
-    display: none;
-  }
-}
 
 .projectlist__row {
   display: flex;
