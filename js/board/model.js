@@ -61,13 +61,18 @@ export function partBounds(project, placed) {
     minCol = Math.min(minCol, h.col);
     maxCol = Math.max(maxCol, h.col);
   }
-  if (symbol) {
-    const halfW = Math.ceil(symbol.width / 2);
-    const halfH = Math.ceil(symbol.height / 2);
-    minCol -= Math.max(0, halfW - (maxCol - placed.col));
-    maxCol += Math.max(0, halfW - (placed.col - minCol));
-    minRow -= Math.max(0, halfH - (maxRow - placed.row));
-    maxRow += Math.max(0, halfH - (placed.row - minRow));
+  // Two-pin flexible parts sit on the pin column: their body is thin, so do not
+  // pad the perpendicular axis — a vertical part keeps a single column.
+  const flexible = Boolean(comp && isFlexible(comp.symbolId) && symbol && symbol.pins.length === 2);
+  if (symbol && !flexible) {
+    const rot = ((placed.rot % 360) + 360) % 360;
+    const vertical = rot === 90 || rot === 270;
+    const halfW = Math.ceil((vertical ? symbol.height : symbol.width) / 2);
+    const halfH = Math.ceil((vertical ? symbol.width : symbol.height) / 2);
+    minCol = Math.min(minCol, placed.col - halfW);
+    maxCol = Math.max(maxCol, placed.col + halfW);
+    minRow = Math.min(minRow, placed.row - halfH);
+    maxRow = Math.max(maxRow, placed.row + halfH);
   }
   return { minRow, maxRow, minCol, maxCol };
 }
