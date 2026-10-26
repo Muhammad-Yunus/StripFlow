@@ -376,6 +376,7 @@ function drawSymbolArt(ctx, symbol, colors, lineWidth) {
   if (id.startsWith('conn')) return drawConnector(ctx, symbol);
   if (id === 'switch') return drawSwitch(ctx);
   if (id === 'pot') return drawPot(ctx);
+  if (id === 'inductor') return drawInductor(ctx);
   return drawGeneric(ctx, symbol, colors);
 }
 
@@ -550,10 +551,22 @@ function drawPot(ctx) {
   lead(ctx, 1.4, 0, 2, 0);
   lead(ctx, 0, -2, 0, -1.1);
   ctx.beginPath();
-  ctx.moveTo(-0.35, -0.85);
-  ctx.lineTo(0, -0.45);
+  ctx.moveTo(0, -1.1);
+  ctx.lineTo(-0.35, -0.85);
   ctx.lineTo(0.35, -0.85);
   ctx.closePath();
+  ctx.stroke();
+}
+
+function drawInductor(ctx) {
+  lead(ctx, -2, 0, -1.6, 0);
+  lead(ctx, 1.6, 0, 2, 0);
+  ctx.beginPath();
+  const r = 0.28;
+  for (let i = 0; i < 6; i++) {
+    const x = -1.4 + i * 0.48;
+    ctx.arc(x + r, 0, r, Math.PI, 0);
+  }
   ctx.stroke();
 }
 
