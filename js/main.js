@@ -50,12 +50,12 @@ boot().catch((err) => {
 });
 
 async function boot() {
-  const overlay = document.getElementById('loading-overlay');
+  const loadingOverlay = document.getElementById('loading-overlay');
   const bar = document.getElementById('loading-bar-fill');
-  const text = document.getElementById('loading-text');
+  const textEl = document.getElementById('loading-text');
   const setProgress = (p, msg) => {
     if (bar) bar.style.width = `${Math.max(5, Math.min(100, p))}%`;
-    if (text && msg) text.textContent = msg;
+    if (textEl && msg) textEl.textContent = msg;
   };
   setProgress(10, 'Loading last project');
   const project = await loadInitialProject();
@@ -827,11 +827,13 @@ async function boot() {
     setProgress(100, 'Ready');
   }
 
-  const overlay = document.getElementById('loading-overlay');
-  if (overlay) {
-    overlay.classList.add('is-hidden');
-    setTimeout(() => overlay.remove(), 250);
+  const overlayEl = document.getElementById('loading-overlay');
+  if (overlayEl) {
+    overlayEl.classList.add('is-hidden');
+    setTimeout(() => overlayEl.remove(), 250);
   }
+
+  if (window.lucide) lucide.createIcons();
 
   globalThis.__stripflow = { store, autosave, schematicTools, boardTools, renderer: schematicRenderer };
 }
