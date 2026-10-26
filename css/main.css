@@ -428,10 +428,15 @@ select {
   color: var(--color-muted);
 }
 
-.sidebar__tab svg,
+.sidebar__tab svg {
+  width: 10px;
+  height: 10px;
+  display: block;
+}
+
 .panel__title svg {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   display: block;
 }
 
