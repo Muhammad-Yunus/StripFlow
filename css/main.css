@@ -778,6 +778,41 @@ select {
   padding: 3px 9px;
 }
 
+.board-floating {
+  position: fixed;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-2);
+  transform: translateX(-50%);
+}
+
+.board-floating__btn {
+  padding: 3px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.board-floating__btn:hover:not(:disabled) {
+  background: var(--color-surface-2);
+}
+
+.board-floating__btn--danger {
+  color: var(--color-danger);
+}
+
+.board-floating[hidden] {
+  display: none !important;
+}
+
 .workspace {
     grid-template-columns: minmax(0, var(--split-left, 1fr)) 5px minmax(0, 1fr);
   }

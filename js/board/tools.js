@@ -25,6 +25,15 @@ export class BoardTools {
     this.onRender = onRender;
     this.onStatus = onStatus;
     this.toast = toast;
+    this.floating = document.getElementById('board-floating');
+    this._boundFloating = (e) => this.handleFloating(e);
+    this.floating?.addEventListener('click', this._boundFloating);
+    this.store.subscribe((state) => {
+      this.updateFloating(state);
+      this.onRender();
+    });
+    this._resize = () => this.updateFloating(this.store.getState());
+    window.addEventListener('resize', this._resize);
     this.drag = null;
     this.pan = null;
     this.right = null;
@@ -360,41 +369,8 @@ export class BoardTools {
     const part = this.renderer.hitPart(project, this.store.getUI(), local.x, local.y);
     if (part) {
       this.store.setUI({ boardSelection: [part.compId] });
-      const comp = project.schematic.components.find((c) => c.id === part.compId);
-      const placed = findPlaced(project, part.compId);
-      showContextMenu(
-        [
-          {
-            label: 'Rotate 90° (R)',
-            action: () => this.store.apply('Rotate part', (draft) => rotatePlaced(draft, part.compId)),
-          },
-          {
-            label: placed?.locked ? 'Unlock placement' : 'Lock placement',
-            action: () =>
-              this.store.apply('Toggle part lock', (draft) => {
-                const p = draft.board.parts.find((x) => x.compId === part.compId);
-                if (p) p.locked = !p.locked;
-              }),
-          },
-          {
-            label: comp?.offBoard ? 'On-board part' : 'Off-board (pads only)',
-            action: () =>
-              this.store.apply('Toggle off-board', (draft) => {
-                const c = draft.schematic.components.find((x) => x.id === part.compId);
-                if (c) c.offBoard = !c.offBoard;
-              }),
-          },
-          {
-            label: 'Unplace from board',
-            danger: true,
-            action: () =>
-              this.store.apply('Unplace part', (draft) => unplacePart(draft, part.compId)),
-          },
-        ],
-        clientX,
-        clientY,
-      );
       this.onRender();
+      this.updateFloating(this.store.getState());
       return;
     }
 
@@ -485,13 +461,70 @@ export class BoardTools {
     return extras;
   }
 
+  handleFloating(e) {
+    const btn = e.target.closest('.board-floating__btn');
+    if (!btn || !this.floating || this.floating.hidden) return;
+    const action = btn.dataset.action;
+    const project = this.store.getProject();
+    const id = project.ui.boardSelection[0];
+    if (!id) return;
+    const placed = findPlaced(project, id);
+    const comp = project.schematic.components.find((c) => c.id === id);
+    if (action === 'rotate') {
+      this.store.apply('Rotate part', (draft) => rotatePlaced(draft, id));
+    } else if (action === 'lock') {
+      this.store.apply('Toggle part lock', (draft) => {
+        const p = draft.board.parts.find((x) => x.compId === id);
+        if (p) p.locked = !p.locked;
+      });
+    } else if (action === 'offboard') {
+      this.store.apply('Toggle off-board', (draft) => {
+        const c = draft.schematic.components.find((x) => x.id === id);
+        if (c) c.offBoard = !c.offBoard;
+      });
+    } else if (action === 'unplace') {
+      this.store.apply('Unplace part', (draft) => unplacePart(draft, id));
+    }
+  }
+
+  updateFloating(state) {
+    if (!this.floating) return;
+    const project = state.project;
+    const sel = project.ui.boardSelection ?? [];
+    if (sel.length !== 1) {
+      this.floating.hidden = true;
+      return;
+    }
+    const id = sel[0];
+    const placed = findPlaced(project, id);
+    const comp = project.schematic.components.find((c) => c.id === id);
+    if (!placed) {
+      this.floating.hidden = true;
+      return;
+    }
+    const lockBtn = this.floating.querySelector('[data-action="lock"]');
+    if (lockBtn) lockBtn.textContent = placed.locked ? 'Unlock' : 'Lock';
+    const offBtn = this.floating.querySelector('[data-action="offboard"]');
+    if (offBtn) offBtn.textContent = comp?.offBoard ? 'On-board' : 'Off-board';
+    const rect = this.canvas.getBoundingClientRect();
+    const view = project.ui.boardView ?? { pan: { x: 0, y: 0 }, zoom: 1 };
+    const cell = project.board.holeSize ?? 24;
+    const cx = (placed.col + 0.5) * cell * view.zoom + view.pan.x;
+    const cy = placed.row * cell * view.zoom + view.pan.y - 4;
+    this.floating.hidden = false;
+    this.floating.style.left = `${rect.left + cx}px`;
+    this.floating.style.top = `${rect.top + cy - 28}px`;
+  }
+
   dispose() {
     const c = this.canvas;
     c.removeEventListener('pointerdown', this._bound.down);
     c.removeEventListener('pointermove', this._bound.move);
     c.removeEventListener('pointerup', this._bound.up);
+    c.removeEventListener('pointercancel', this._bound.up);
     c.removeEventListener('pointerleave', this._bound.leave);
     c.removeEventListener('wheel', this._bound.wheel);
     c.removeEventListener('contextmenu', this._bound.context);
+    window.removeEventListener('resize', this._resize);
   }
 }

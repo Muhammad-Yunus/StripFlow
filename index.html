@@ -52,6 +52,13 @@
         <button class="btn btn--small" id="recovery-dismiss">Dismiss</button>
       </div>
 
+      <div id="board-floating" class="board-floating" hidden role="toolbar" aria-label="Selected part actions">
+        <button class="board-floating__btn" data-action="rotate" title="Rotate 90° (R)">Rotate</button>
+        <button class="board-floating__btn" data-action="lock">Lock</button>
+        <button class="board-floating__btn" data-action="offboard">Off-board</button>
+        <button class="board-floating__btn board-floating__btn--danger" data-action="unplace">Unplace</button>
+      </div>
+
       <main class="workspace">
         <section class="panel panel--schematic" id="schematic-panel">
           <div class="panel__header">
