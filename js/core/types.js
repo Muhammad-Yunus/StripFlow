@@ -41,6 +41,7 @@
  * @property {boolean} excluded
  * @property {boolean} offBoard
  * @property {Record<string, unknown>} attrs
+ * @property {{x:number,y:number}} [labelPos]
  *
  * @typedef {Object} Wire
  * @property {string} id
@@ -86,6 +87,7 @@
  * @property {boolean} flat
  * @property {boolean} locked
  * @property {string} packageId
+ * @property {{row:number,col:number}} [labelOffset]
  *
  * @typedef {Object} Cut
  * @property {string} id

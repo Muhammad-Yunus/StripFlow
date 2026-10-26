@@ -193,6 +193,60 @@ export class SchematicRenderer {
     }
   }
 
+  /**
+   * Compute the screen-space rect for a component's reference+value label.
+   * Honors comp.labelOffset when present, otherwise auto-placed via
+   * resolveLabelPos. Excludes this comp's own body from collision checks.
+   * @returns {{cx:number, top:number, w:number, h:number}}
+   */
+  compLabelRect(ctx, comp, project, v, s, layout, compId) {
+    const symbol = getSymbol(comp.symbolId, project.customSymbols);
+    if (!symbol) return null;
+    const px = v.pan.x + comp.pos.x * s;
+    const py = v.pan.y + comp.pos.y * s;
+    const bodyW = Math.max(symbol.width / 2, 1) * s;
+    const bodyH = Math.max(symbol.height / 2, 1) * s;
+    ctx.font = '600 11px system-ui, sans-serif';
+    const refW = ctx.measureText(comp.ref || '').width;
+    ctx.font = '10px system-ui, sans-serif';
+    const valW = ctx.measureText(comp.value || '').width;
+    const boxW = Math.max(refW, valW) + 4;
+    const boxH = 22;
+    if (comp.labelOffset) {
+      return { cx: px + comp.labelOffset.x * s, top: py + comp.labelOffset.y * s - boxH / 2, w: boxW, h: boxH };
+    }
+    const p = resolveLabelPos(px, py, bodyW, bodyH, boxW, boxH, layout ?? { compBoxes: [], wireSegs: [], placedLabels: [] }, compId ?? comp.id);
+    return { cx: p.cx, top: p.y, w: boxW, h: boxH };
+  }
+
+  /**
+   * Hit-test a component's reference/value label. Returns the comp id if the
+   * world point lands inside the label rect and not on a pin or body.
+   * @param {import('../core/types.js').Project} project
+   * @param {{x:number,y:number}} world
+   * @param {import('../core/types.js').UIState} ui
+   * @returns {string|null}
+   */
+  hitCompLabel(project, world, ui) {
+    const v = this.view(ui);
+    const s = CELL * v.zoom;
+    const spx = v.pan.x + world.x * s;
+    const spy = v.pan.y + world.y * s;
+    for (const comp of project.schematic.components) {
+      // pins take priority
+      let onPin = false;
+      for (const pin of comp.pins) {
+        const p = componentPinPos(comp, pin.offset);
+        if (Math.hypot(p.x - world.x, p.y - world.y) <= 7 / (CELL * v.zoom)) onPin = true;
+      }
+      if (onPin) continue;
+      const r = this.compLabelRect(this.ctx, comp, project, v, s, null, comp.id);
+      if (!r) continue;
+      if (spx >= r.cx - r.w / 2 && spx <= r.cx + r.w / 2 && spy >= r.top && spy <= r.top + r.h) return comp.id;
+    }
+    return null;
+  }
+
   drawComponent(ctx, comp, project, v, s, colors, selected, nets, extras, layout = {}) {
     const symbol = getSymbol(comp.symbolId, project.customSymbols);
     if (!symbol) return;
@@ -238,22 +292,18 @@ export class SchematicRenderer {
     // Reference + value, placed to avoid wires / components / other labels
     const bodyW = Math.max(symbol.width / 2, 1) * s;
     const bodyH = Math.max(symbol.height / 2, 1) * s;
-    ctx.font = '600 11px system-ui, sans-serif';
-    const refW = ctx.measureText(comp.ref || '').width;
-    ctx.font = '10px system-ui, sans-serif';
-    const valW = ctx.measureText(comp.value || '').width;
-    const boxW = Math.max(refW, valW) + 4;
-    const boxH = 22;
-    const labelPos = resolveLabelPos(px, py, bodyW, bodyH, boxW, boxH, layout, comp.id);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.font = '600 11px system-ui, sans-serif';
-    ctx.fillStyle = selected ? colors.selection : colors.text;
-    ctx.fillText(comp.ref || '', labelPos.cx, labelPos.y);
-    ctx.font = '10px system-ui, sans-serif';
-    ctx.fillStyle = colors.muted;
-    ctx.fillText(comp.value || '', labelPos.cx, labelPos.y + 12);
-    (layout.placedLabels || (layout.placedLabels = [])).push({ x: labelPos.cx - boxW / 2, y: labelPos.y, w: boxW, h: boxH, id: comp.id });
+    const lr = this.compLabelRect(ctx, comp, project, v, s, layout, comp.id);
+    if (lr) {
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.font = '600 11px system-ui, sans-serif';
+      ctx.fillStyle = selected ? colors.selection : colors.text;
+      ctx.fillText(comp.ref || '', lr.cx, lr.top);
+      ctx.font = '10px system-ui, sans-serif';
+      ctx.fillStyle = colors.muted;
+      ctx.fillText(comp.value || '', lr.cx, lr.top + 12);
+      (layout.placedLabels || (layout.placedLabels = [])).push({ x: lr.cx - lr.w / 2, y: lr.top, w: lr.w, h: lr.h, id: comp.id });
+    }
 
     if (selected) {
       const pad = 6;

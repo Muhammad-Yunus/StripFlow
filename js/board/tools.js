@@ -35,6 +35,7 @@ export class BoardTools {
     this._resize = () => this.updateFloating(this.store.getProject());
     window.addEventListener('resize', this._resize);
     this.drag = null;
+    this.labelDrag = null;
     this.pan = null;
     this.right = null;
     this.wire = null;
@@ -101,7 +102,18 @@ export class BoardTools {
       return;
     }
 
-    // Select tool
+    // Select tool — dragging the ref/value label wins over moving the part body
+    const labelPlaced = this.renderer.hitPartLabel(project, ui, local.x, local.y);
+    if (labelPlaced) {
+      const selection = this.toggleSelection(ui.boardSelection, labelPlaced.compId, e);
+      this.store.setUI({ boardSelection: selection });
+      const base = labelPlaced.labelOffset ?? { row: 0, col: 0 };
+      this.store.beginTransaction('Move label');
+      this.labelDrag = { compId: labelPlaced.compId, startCell: cell, startOffset: { ...base } };
+      this.canvas.setPointerCapture(e.pointerId);
+      this.onRender();
+      return;
+    }
     const part = this.renderer.hitPart(project, ui, local.x, local.y);
     if (part) {
       const selection = this.toggleSelection(ui.boardSelection, part.compId, e);
@@ -216,12 +228,24 @@ export class BoardTools {
       return;
     }
 
+    if (this.labelDrag) {
+      const dRow = Math.round(cell.row - this.labelDrag.startCell.row);
+      const dCol = Math.round(cell.col - this.labelDrag.startCell.col);
+      const row = this.labelDrag.startOffset.row + dRow;
+      const col = this.labelDrag.startOffset.col + dCol;
+      this.store.transient((draft) => {
+        const p = draft.board.parts.find((x) => x.compId === this.labelDrag.compId);
+        if (p) p.labelOffset = { row, col };
+      });
+      this.onRender();
+      return;
+    }
+
     if (this.drag) {
       const dRow = Math.round(cell.row - this.drag.last.row);
       const dCol = Math.round(cell.col - this.drag.last.col);
       if (dRow !== 0 || dCol !== 0) {
-    const project = this.store.getProject ? this.store.getProject() : null;
-    if (!project || !project.ui) return;
+        const project = this.store.getProject();
         const placed = findPlaced(project, this.drag.compId);
         if (placed) {
           const maxRow = project.board.rows - 1;
@@ -260,6 +284,12 @@ export class BoardTools {
         this.openBoardMenu(wasRight.cell, e.clientX, e.clientY);
       }
       this.right = null;
+      return;
+    }
+    if (this.labelDrag) {
+      this.store.endTransaction();
+      this.labelDrag = null;
+      this.onRender();
       return;
     }
     if (this.wireDrag) {

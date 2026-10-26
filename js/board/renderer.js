@@ -287,11 +287,21 @@ export class BoardRenderer {
     ctx.textAlign = 'left';
     ctx.textBaseline = 'bottom';
     ctx.fillStyle = selected ? colors.accent : colors.text;
-    ctx.fillText(comp.ref, x + 4, y - 2);
+    let lx = x + 4;
+    let ly = y - 2;
+    if (placed.labelOffset) {
+      lx = ui.boardView.pan.x + (placed.col + placed.labelOffset.col) * c;
+      ly = ui.boardView.pan.y + (placed.row + placed.labelOffset.row) * c;
+    }
+    ctx.fillText(comp.ref, lx, ly);
     if (c > 14) {
       ctx.font = '9px system-ui, sans-serif';
       ctx.fillStyle = colors.muted;
-      ctx.fillText(offBoard ? `${comp.value} · off-board` : comp.value, x + 4, y + h + 11);
+      if (placed.labelOffset) {
+        ctx.fillText(offBoard ? `${comp.value} · off-board` : comp.value, lx, ly + 2 + 9);
+      } else {
+        ctx.fillText(offBoard ? `${comp.value} · off-board` : comp.value, x + 4, y + h + 11);
+      }
     }
 
     if (selected) {
@@ -381,6 +391,35 @@ export class BoardRenderer {
         const y = cut.row + 0.5;
         if (Math.abs(cell.col - x) < 0.18 && Math.abs(cell.row - y) < 0.4) return cut;
       }
+    }
+    return null;
+  }
+
+  /**
+   * Hit-test a placed part's reference/value label (screen space). Returns the
+   * placed part whose label text sits under the cursor, or null.
+   * @returns {import('../core/types.js').PlacedPart|null}
+   */
+  hitPartLabel(project, ui, px, py) {
+    const c = this.cell(ui);
+    const v = ui.boardView;
+    for (let i = project.board.parts.length - 1; i >= 0; i--) {
+      const placed = project.board.parts[i];
+      const comp = findComponent(project, placed.compId);
+      if (!comp) continue;
+      let lx, ly;
+      if (placed.labelOffset) {
+        lx = v.pan.x + (placed.col + placed.labelOffset.col) * c;
+        ly = v.pan.y + (placed.row + placed.labelOffset.row) * c;
+      } else {
+        const b = partBounds(project, placed);
+        lx = v.pan.x + b.minCol * c + 4;
+        ly = v.pan.y + b.minRow * c - 2;
+      }
+      // approximate text box: width ~ 1.6 cells, height ~ 1.2 cells
+      const bw = c * 1.6;
+      const bh = c * 1.2;
+      if (px >= lx && px <= lx + bw && py >= ly - bh && py <= ly) return placed;
     }
     return null;
   }

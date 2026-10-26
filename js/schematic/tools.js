@@ -18,6 +18,7 @@ export class SchematicTools {
     this.onRender = onRender;
     this.onStatus = onStatus;
     this.drag = null;
+    this.labelDrag = null;
     this.wire = null;
     this.pan = null;
     this.pointer = null;
@@ -138,6 +139,20 @@ export class SchematicTools {
       return;
     }
 
+    // Drag the ref/value label without moving the component body
+    const labelCompId = this.renderer.hitCompLabel(project, world, ui);
+    if (labelCompId) {
+      const comp = project.schematic.components.find((c) => c.id === labelCompId);
+      if (comp) {
+        const base = comp.labelOffset ?? { x: 0, y: 0 };
+        this.store.beginTransaction('Move label');
+        this.labelDrag = { compId: labelCompId, startWorld: world, startOffset: { ...base } };
+        this.canvas.setPointerCapture(e.pointerId);
+        this.onRender();
+        return;
+      }
+    }
+
     if (hit.type === 'component' || hit.type === 'wire' || hit.type === 'flag' || hit.type === 'label') {
       const id = hit.id;
       let selection = ui.schematicSelection;
@@ -202,9 +217,26 @@ export class SchematicTools {
       return;
     }
 
+    if (this.labelDrag) {
+      const ox = Math.round(this.pointer.x - this.labelDrag.startWorld.x);
+      const oy = Math.round(this.pointer.y - this.labelDrag.startWorld.y);
+      const nx = this.labelDrag.startOffset.x + ox;
+      const ny = this.labelDrag.startOffset.y + oy;
+      this.store.transient((draft) => {
+        const c = draft.schematic.components.find((x) => x.id === this.labelDrag.compId);
+        if (c) c.labelOffset = { x: nx, y: ny };
+      });
+      this.onRender();
+      return;
+    }
+
     const project = this.store.getProject();
     const hit = this.renderer.hitTest(project, this.pointer, ui);
     if (hit.type === 'pin') this.hoverPin = { compId: hit.compId, pinId: hit.pinId };
+
+    if (!this.labelDrag && !this.drag && !this.wire && !this.pan) {
+      this.canvas.style.cursor = this.renderer.hitCompLabel(project, this.pointer, ui) ? 'grab' : 'default';
+    }
 
     if (this.wire) {
       this.onRender();
@@ -226,6 +258,12 @@ export class SchematicTools {
     if (this.drag?.kind === 'move') {
       this.store.endTransaction();
       this.drag = null;
+      this.onRender();
+      return;
+    }
+    if (this.labelDrag) {
+      this.store.endTransaction();
+      this.labelDrag = null;
       this.onRender();
       return;
     }
@@ -371,6 +409,12 @@ export class SchematicTools {
   cancel() {
     if (this.wire) {
       this.wire = null;
+      this.onRender();
+      return true;
+    }
+    if (this.labelDrag) {
+      this.store.cancelTransaction();
+      this.labelDrag = null;
       this.onRender();
       return true;
     }
