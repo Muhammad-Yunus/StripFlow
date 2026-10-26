@@ -430,8 +430,8 @@ select {
 
 .sidebar__tab svg,
 .panel__title svg {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   display: block;
 }
 
