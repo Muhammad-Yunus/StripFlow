@@ -69,6 +69,40 @@
       </div>
 
       <main class="workspace">
+        <aside class="sidebar" id="sidebar">
+          <nav class="sidebar__tabs" role="tablist">
+            <button class="sidebar__tab is-active" data-tab="library" role="tab">Library</button>
+            <button class="sidebar__tab" data-tab="nets" role="tab">Nets</button>
+            <button class="sidebar__tab" data-tab="parts" role="tab">Parts</button>
+            <button class="sidebar__tab" data-tab="conflicts" role="tab">Issues</button>
+          </nav>
+
+          <div class="sidebar__body">
+            <div class="sidebar__pane is-active" data-pane="library">
+              <p class="sidebar__lede">Click a symbol, then click the schematic canvas to place it.</p>
+              <div id="library-list" class="library"></div>
+              <p class="sidebar__lede sidebar__lede--muted">Custom components are saved with the project.</p>
+              <button class="btn btn--block" id="btn-custom-component">+ Create custom component</button>
+            </div>
+
+            <div class="sidebar__pane" data-pane="nets">
+              <div id="net-list" class="netlist"></div>
+            </div>
+
+            <div class="sidebar__pane" data-pane="parts">
+              <h3 class="sidebar__heading">Unplaced</h3>
+              <div id="unplaced-list" class="tray"></div>
+              <h3 class="sidebar__heading">Placed</h3>
+              <div id="placed-list" class="tray"></div>
+              <div id="properties" class="properties"></div>
+            </div>
+
+            <div class="sidebar__pane" data-pane="conflicts">
+              <div id="issue-list" class="issues"></div>
+            </div>
+          </div>
+        </aside>
+
         <section class="panel panel--schematic" id="schematic-panel">
           <div class="panel__header">
             <h2 class="panel__title">Schematic</h2>
@@ -109,40 +143,6 @@
             <canvas id="board-canvas" aria-label="Stripboard canvas"></canvas>
           </div>
         </section>
-
-        <aside class="sidebar" id="sidebar">
-          <nav class="sidebar__tabs" role="tablist">
-            <button class="sidebar__tab is-active" data-tab="library" role="tab">Library</button>
-            <button class="sidebar__tab" data-tab="nets" role="tab">Nets</button>
-            <button class="sidebar__tab" data-tab="parts" role="tab">Parts</button>
-            <button class="sidebar__tab" data-tab="conflicts" role="tab">Issues</button>
-          </nav>
-
-          <div class="sidebar__body">
-            <div class="sidebar__pane is-active" data-pane="library">
-              <p class="sidebar__lede">Click a symbol, then click the schematic canvas to place it.</p>
-              <div id="library-list" class="library"></div>
-              <p class="sidebar__lede sidebar__lede--muted">Custom components are saved with the project.</p>
-              <button class="btn btn--block" id="btn-custom-component">+ Create custom component</button>
-            </div>
-
-            <div class="sidebar__pane" data-pane="nets">
-              <div id="net-list" class="netlist"></div>
-            </div>
-
-            <div class="sidebar__pane" data-pane="parts">
-              <h3 class="sidebar__heading">Unplaced</h3>
-              <div id="unplaced-list" class="tray"></div>
-              <h3 class="sidebar__heading">Placed</h3>
-              <div id="placed-list" class="tray"></div>
-              <div id="properties" class="properties"></div>
-            </div>
-
-            <div class="sidebar__pane" data-pane="conflicts">
-              <div id="issue-list" class="issues"></div>
-            </div>
-          </div>
-        </aside>
       </main>
     </div>
 

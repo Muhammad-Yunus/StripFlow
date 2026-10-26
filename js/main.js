@@ -734,7 +734,7 @@ async function boot() {
       schedule();
     };
     const bounds = () => {
-      const sidebarWidth = sidebar && sidebar.offsetParent ? sidebar.offsetWidth + 5 : 0;
+      const sidebarWidth = sidebar && sidebar.offsetParent ? sidebar.offsetWidth : 0;
       const max = Math.max(260, workspace.clientWidth - sidebarWidth - 260 - 5);
       return { min: 240, max };
     };
@@ -767,8 +767,9 @@ async function boot() {
       splitter.classList.add('is-dragging');
       const onMove = (event) => {
         event.preventDefault();
-        const workspaceLeft = workspace.getBoundingClientRect().left;
-        setLeft(event.clientX - workspaceLeft, false);
+        const rect = workspace.getBoundingClientRect();
+        const sidebarW = sidebar && sidebar.offsetParent ? sidebar.offsetWidth : 0;
+        setLeft(event.clientX - rect.left - sidebarW, false);
       };
       const onUp = () => {
         splitter.classList.remove('is-dragging');

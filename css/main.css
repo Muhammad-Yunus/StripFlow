@@ -267,7 +267,7 @@ select {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, var(--split-left, 1fr)) 5px minmax(0, 1fr) var(--sidebar-w);
+  grid-template-columns: var(--sidebar-w) minmax(0, var(--split-left, 1fr)) 5px minmax(0, 1fr);
   gap: 1px;
   background: var(--color-border);
   min-height: 0;
@@ -346,7 +346,7 @@ select {
 
 .toolbtn.is-active {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-text);
 }
 
 .panel__hint {
