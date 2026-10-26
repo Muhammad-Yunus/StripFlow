@@ -60,11 +60,7 @@ async function boot() {
   setProgress(10, 'Loading last project');
   const project = await loadInitialProject();
   setProgress(60, 'Initializing workspace');
-  setSetting('sessionDirty', null);
-  if (interrupted?.projectId === project.id) showRecoveryBanner(interrupted);
-  document.getElementById('recovery-dismiss').addEventListener('click', () => {
-    document.getElementById('recovery-banner').hidden = true;
-  });
+  const interrupted = getSetting('sessionDirty', null);
 
   const store = new Store(project);
   const autosave = new AutoSave(store);
