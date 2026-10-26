@@ -84,8 +84,11 @@ export class Toolbar {
 
   /** @param {'light'|'dark'} theme */
   setTheme(theme) {
-    this.themeBtn.textContent = theme === 'dark' ? '☀' : '◐';
-    this.themeBtn.title = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+    if (this.themeBtn) {
+      this.themeBtn.innerHTML = `<i data-lucide="${theme === 'dark' ? 'sun' : 'moon'}"></i>`;
+      this.themeBtn.title = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+      if (window.lucide) lucide.createIcons();
+    }
   }
 
   /**
