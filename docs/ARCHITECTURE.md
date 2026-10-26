@@ -585,6 +585,7 @@ for run in portfolio(effort):
 - `layout/client.js` menerima `{ signal, onProgress }`; abort → reject `AbortError`, worker di-terminate. `threads` (1–4) menjalankan beberapa worker paralel dengan seed offset dan memilih skor terbaik; `LAYOUT_DONE` hanya di-emit sekali.
 - UI modal menampilkan progress bar + est countdown, `Run` disabled selama run, `Cancel`/Escape membatalkan tanpa mengubah board.
 - Setting auto-layout disimpan di localStorage `stripflow:layoutOptions` (`effort`, `drilledOnly`, `newLayout`, `extraRoom`, `noStackedWires`, `standingParts`, `threads`); `layoutEffort` lama tetap ditulis untuk kompatibilitas.
+- Seed baca dari `project.meta.seed` (bisa diisi di modal auto-layout); bila `newLayout` dimatikan hasil deterministik, bila dinyalakan timestamp ditambahkan. Lock rows/cols disimpan ke `board.options.rowsLocked/colsLocked`.
 - `newLayout` menambahkan timestamp ke seed sehingga setiap run menghasilkan layout berbeda; `extraRoom` menambah baris/kolom kosong di luar kebutuhan packing (kecuali dimensi dikunci).
 - `noStackedWires` memberi penalti pada link wire yang memakai hole endpoint yang sudah dipakai wire lain; `standingParts` memaksa part fleksibel 2-pin yang belum ditempatkan ke orientasi vertikal.
 - Transfer data: kirim model minimal (komponen, pin, net), bukan seluruh project.
