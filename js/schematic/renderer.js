@@ -562,9 +562,9 @@ function drawInductor(ctx) {
   lead(ctx, -2, 0, -1.6, 0);
   lead(ctx, 1.6, 0, 2, 0);
   ctx.beginPath();
-  const r = 0.28;
+  const r = 0.26;
   for (let i = 0; i < 6; i++) {
-    const x = -1.4 + i * 0.48;
+    const x = -1.44 + i * 0.48;
     ctx.arc(x + r, 0, r, Math.PI, 0);
   }
   ctx.stroke();
