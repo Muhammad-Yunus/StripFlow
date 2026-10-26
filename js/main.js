@@ -118,7 +118,7 @@ async function boot() {
     onPrint: () => openPrintDialog(),
     onExportImage: () => openExportImageDialog(),
     onAuto: () => openAutoDialog(),
-    onTheme: () => toolbar.setTheme(toggleTheme(currentTheme)),
+    onTheme: () => { currentTheme = toggleTheme(currentTheme); toolbar.setTheme(currentTheme); },
   });
 
   let currentTheme = initTheme();
