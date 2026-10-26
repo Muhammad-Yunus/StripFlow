@@ -97,14 +97,10 @@ select {
 }
 
 .brand__logo {
-  display: grid;
-  place-items: center;
   width: 26px;
   height: 26px;
+  object-fit: cover;
   border-radius: var(--radius-sm);
-  background: var(--color-accent);
-  color: #fff;
-  font-size: 15px;
 }
 
 .brand__name {
