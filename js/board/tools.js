@@ -490,7 +490,7 @@ export class BoardTools {
   updateFloating(state) {
     if (!this.floating) return;
     const project = state.project;
-    const sel = project.ui.boardSelection ?? [];
+    const sel = (project.ui && project.ui.boardSelection) ?? [];
     if (sel.length !== 1) {
       this.floating.hidden = true;
       return;
