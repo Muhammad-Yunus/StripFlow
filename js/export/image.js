@@ -34,13 +34,18 @@ function drawBoardCanvas(project, analysis, nets, opts) {
   ctx.strokeRect(0, 0, project.board.cols * cell, project.board.rows * cell);
 
   const stripH = cell * 0.44;
+  const conflictSet = new Set((analysis.conflicts || []).map((c) => `${c.row}:${c.start}-${c.end}`));
   for (const seg of analysis.segments || []) {
     const x = seg.start * cell;
     const y = (seg.row + 0.5) * cell - stripH / 2;
     const sw = (seg.end - seg.start + 1) * cell;
     const single = seg.nets && seg.nets.size === 1 ? [...seg.nets][0] : null;
-    ctx.fillStyle = single ? netColorByName.get(single) || '#8f8f8f' : '#c9c3b5';
-    if (seg.nets && seg.nets.size > 1) ctx.fillStyle = '#f0b4b4';
+    const isConf = conflictSet.has(seg.id) || (seg.nets && seg.nets.size > 1);
+    if (isConf && opts.conflicts !== false) {
+      ctx.fillStyle = '#f87171';
+    } else {
+      ctx.fillStyle = single ? netColorByName.get(single) || '#d8d8d8' : '#d8d8d8';
+    }
     ctx.fillRect(x, y, sw, stripH);
   }
 

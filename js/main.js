@@ -380,6 +380,7 @@ async function boot() {
       scale: document.getElementById('export-image-scale').value,
       labels: document.getElementById('export-image-labels').checked,
       grid: document.getElementById('export-image-grid').checked,
+      conflicts: document.getElementById('export-image-conflicts')?.checked ?? true,
     };
     document.getElementById('modal-export-image').close('export');
     const project = store.getProject();
