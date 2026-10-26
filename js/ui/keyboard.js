@@ -168,6 +168,17 @@ export function initKeyboard(deps) {
       return;
     }
 
+    if (key === 'Home' && !mod) {
+      e.preventDefault();
+      if (panel === 'schematic') {
+        store.setUI({ schematicView: { pan: { x: 80, y: 80 }, zoom: 1 } });
+      } else if (panel === 'board') {
+        store.setUI({ boardView: { pan: { x: 24, y: 24 }, zoom: 1 } });
+      }
+      toast('View reset', 'info');
+      return;
+    }
+
     if (key.startsWith('Arrow')) {
       e.preventDefault();
       const step = e.shiftKey ? 5 : 1;
