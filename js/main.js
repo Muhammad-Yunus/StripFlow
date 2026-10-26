@@ -600,6 +600,7 @@ async function boot() {
     document.getElementById('auto-no-stacked').checked = saved.noStackedWires ?? false;
     document.getElementById('auto-standing').checked = saved.standingParts ?? false;
     document.getElementById('auto-threads').value = String(saved.threads ?? 1);
+    document.getElementById('auto-clearance').value = String(project.board.options?.clearance ?? saved.clearance ?? 0);
     document.getElementById('auto-seed').value = project.meta?.seed ? String(project.meta.seed) : '';
     document.getElementById('auto-effort').value = ['fast', 'normal', 'high'].includes(savedEffort)
       ? savedEffort
@@ -648,11 +649,14 @@ async function boot() {
       noStackedWires: options.noStackedWires,
       standingParts: options.standingParts,
       threads: options.threads,
+      clearance: Number(document.getElementById('auto-clearance').value) || 0,
     });
-    store.apply('Set board lock flags', (draft) => {
+    store.apply('Set board layout options', (draft) => {
       if (!draft.board.options) draft.board.options = {};
       draft.board.options.rowsLocked = options.lockRows;
       draft.board.options.colsLocked = options.lockCols;
+      draft.board.options.clearance = Number(document.getElementById('auto-clearance').value) || 0;
+      draft.board.options.drilledCutsOnly = options.drilledOnly;
     });
     const controller = new AbortController();
     layoutController = controller;
