@@ -397,16 +397,12 @@ export class SchematicRenderer {
  * @returns {{cx:number, y:number}} center-x, top-y in screen coords
  */
 function resolveLabelPos(px, py, bodyW, bodyH, boxW, boxH, layout, compId) {
-  const pad = 4;
+  const pad = 2;
   const candidates = [
     { cx: px, y: py - bodyH - boxH - pad },
     { cx: px + bodyW + boxW / 2 + pad, y: py - boxH / 2 },
     { cx: px - bodyW - boxW / 2 - pad, y: py - boxH / 2 },
     { cx: px, y: py + bodyH + pad },
-    { cx: px - bodyW, y: py - bodyH - boxH - pad },
-    { cx: px + bodyW, y: py - bodyH - boxH - pad },
-    { cx: px - bodyW, y: py + bodyH + pad },
-    { cx: px + bodyW, y: py + bodyH + pad },
   ];
 
   const obstacles = [
