@@ -187,7 +187,7 @@ export class SchematicRenderer {
 
     ctx.strokeStyle = colors.text;
     ctx.fillStyle = colors.surface;
-    ctx.lineWidth = 1.6 / Math.max(0.4, v.zoom);
+    ctx.lineWidth = 1.0 / Math.max(0.4, v.zoom);
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
 
@@ -304,7 +304,7 @@ export class SchematicRenderer {
     ctx.scale(s, s);
     ctx.strokeStyle = colors.accent;
     ctx.fillStyle = 'transparent';
-    ctx.lineWidth = 1.6 / Math.max(0.4, v.zoom);
+    ctx.lineWidth = 1.0 / Math.max(0.4, v.zoom);
     drawSymbolArt(ctx, symbol, colors);
     ctx.restore();
   }
