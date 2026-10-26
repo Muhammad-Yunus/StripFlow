@@ -6,8 +6,8 @@ html[data-theme="dark"] {
   --color-text: #e6e9ef;
   --color-muted: #93a0b4;
   --color-border: #2a313d;
-  --color-accent: #4f83ff;
-  --color-accent-soft: #1e2c4d;
+  --color-accent: #E5E793;
+  --color-accent-soft: rgba(229, 231, 147, 0.25);
   --color-danger: #f87171;
   --color-danger-soft: #3a1d1f;
   --color-warning: #fbbf24;
