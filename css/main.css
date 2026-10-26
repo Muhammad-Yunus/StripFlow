@@ -126,6 +126,9 @@ select {
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 6px 10px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -134,24 +137,21 @@ select {
   white-space: nowrap;
 }
 
-.btn:hover:not(:disabled) {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
-
-.btn:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 
 .btn--icon {
   min-width: 32px;
-  font-size: 15px;
-  line-height: 1;
+  justify-content: center;
+  padding: 6px;
+}
+
+.btn--icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .btn--primary {
