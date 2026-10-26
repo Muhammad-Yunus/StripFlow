@@ -185,11 +185,11 @@ export class SchematicRenderer {
     if (comp.mirror) ctx.scale(-1, 1);
     ctx.scale(s, s);
 
-    ctx.strokeStyle = colors.text;
-    ctx.fillStyle = colors.surface;
-    ctx.lineWidth = 1.0;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
+  ctx.strokeStyle = colors.text;
+  ctx.fillStyle = colors.surface;
+  ctx.lineWidth = 0.01;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
 
     drawSymbolArt(ctx, symbol, colors);
 
@@ -302,11 +302,11 @@ export class SchematicRenderer {
     ctx.globalAlpha = 0.45;
     ctx.translate(px, py);
     ctx.scale(s, s);
-    ctx.strokeStyle = colors.accent;
-    ctx.fillStyle = 'transparent';
-    ctx.lineWidth = 1.0;
-    drawSymbolArt(ctx, symbol, colors);
-    ctx.restore();
+  ctx.strokeStyle = colors.accent;
+  ctx.fillStyle = 'transparent';
+  ctx.lineWidth = 0.01;
+  drawSymbolArt(ctx, symbol, colors);
+  ctx.restore();
   }
 
   /**
@@ -364,7 +364,7 @@ export class SchematicRenderer {
 
 function drawSymbolArt(ctx, symbol, colors) {
   const prev = ctx.lineWidth;
-  ctx.lineWidth = 0.8;
+  ctx.lineWidth = 0.01;
   const id = symbol.id;
   try {
   if (id === 'resistor') return drawResistor(ctx);
