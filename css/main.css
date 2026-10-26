@@ -335,12 +335,21 @@ select {
 }
 
 .toolbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 4px 9px;
   border: 0;
   border-radius: 3px;
   background: transparent;
   cursor: pointer;
   font-size: 12px;
+}
+
+.toolbtn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 
 .toolbtn:hover {
