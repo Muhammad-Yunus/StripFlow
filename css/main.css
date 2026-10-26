@@ -315,6 +315,9 @@ select {
 
 .panel__title {
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   font-weight: 650;
   text-transform: uppercase;
@@ -410,6 +413,10 @@ select {
 
 .sidebar__tab {
   flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   padding: 10px 4px;
   border: 0;
   border-bottom: 2px solid transparent;
@@ -419,6 +426,13 @@ select {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-muted);
+}
+
+.sidebar__tab svg,
+.panel__title svg {
+  width: 11px;
+  height: 11px;
+  display: block;
 }
 
 .sidebar__tab:hover {
