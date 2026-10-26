@@ -104,9 +104,29 @@ export class SchematicRenderer {
     }
 
     // Components
+    const compBoxes = [];
+    for (const comp of project.schematic.components) {
+      const sym = getSymbol(comp.symbolId, project.customSymbols);
+      if (!sym) continue;
+      const bx = v.pan.x + comp.pos.x * s;
+      const by = v.pan.y + comp.pos.y * s;
+      const hw = (Math.max(sym.width, 2) / 2) * s;
+      const hh = (Math.max(sym.height, 2) / 2) * s;
+      compBoxes.push({ id: comp.id, x: bx - hw, y: by - hh, w: hw * 2, h: hh * 2 });
+    }
+    const wireSegs = [];
+    for (const wire of project.schematic.wires) {
+      const pts = wire.points.map((p) => ({ x: v.pan.x + p.x * s, y: v.pan.y + p.y * s }));
+      for (let i = 0; i < pts.length - 1; i++) wireSegs.push([pts[i], pts[i + 1]]);
+    }
+    const placedLabels = [];
     for (const comp of project.schematic.components) {
       const selected = ui.schematicSelection.includes(comp.id);
-      this.drawComponent(ctx, comp, project, v, s, colors, selected, nets, extras);
+      this.drawComponent(ctx, comp, project, v, s, colors, selected, nets, extras, {
+        compBoxes,
+        wireSegs,
+        placedLabels,
+      });
     }
 
     // Flags and labels
@@ -173,7 +193,7 @@ export class SchematicRenderer {
     }
   }
 
-  drawComponent(ctx, comp, project, v, s, colors, selected, nets, extras) {
+  drawComponent(ctx, comp, project, v, s, colors, selected, nets, extras, layout = {}) {
     const symbol = getSymbol(comp.symbolId, project.customSymbols);
     if (!symbol) return;
     const px = v.pan.x + comp.pos.x * s;
@@ -215,16 +235,25 @@ export class SchematicRenderer {
       }
     }
 
-    // Reference + value
-    const labelY = py - Math.max(symbol.height / 2, 1) * s - 4;
+    // Reference + value, placed to avoid wires / components / other labels
+    const bodyW = Math.max(symbol.width / 2, 1) * s;
+    const bodyH = Math.max(symbol.height / 2, 1) * s;
     ctx.font = '600 11px system-ui, sans-serif';
+    const refW = ctx.measureText(comp.ref || '').width;
+    ctx.font = '10px system-ui, sans-serif';
+    const valW = ctx.measureText(comp.value || '').width;
+    const boxW = Math.max(refW, valW) + 4;
+    const boxH = 22;
+    const labelPos = resolveLabelPos(px, py, bodyW, bodyH, boxW, boxH, layout, comp.id);
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
+    ctx.textBaseline = 'top';
+    ctx.font = '600 11px system-ui, sans-serif';
     ctx.fillStyle = selected ? colors.selection : colors.text;
-    ctx.fillText(comp.ref, px, labelY);
+    ctx.fillText(comp.ref || '', labelPos.cx, labelPos.y);
     ctx.font = '10px system-ui, sans-serif';
     ctx.fillStyle = colors.muted;
-    ctx.fillText(comp.value, px, labelY + 11);
+    ctx.fillText(comp.value || '', labelPos.cx, labelPos.y + 12);
+    (layout.placedLabels || (layout.placedLabels = [])).push({ x: labelPos.cx - boxW / 2, y: labelPos.y, w: boxW, h: boxH, id: comp.id });
 
     if (selected) {
       const pad = 6;
@@ -360,6 +389,58 @@ export class SchematicRenderer {
     if (best) return best;
     return { type: 'grid', pos: { x: Math.round(world.x), y: Math.round(world.y) } };
   }
+}
+
+/**
+ * Resolve label position for a component, avoiding collisions with
+ * other component bodies, wire segments, and already-placed labels.
+ * @returns {{cx:number, y:number}} center-x, top-y in screen coords
+ */
+function resolveLabelPos(px, py, bodyW, bodyH, boxW, boxH, layout, compId) {
+  const pad = 4;
+  const candidates = [
+    { cx: px, y: py - bodyH - boxH - pad },
+    { cx: px + bodyW + boxW / 2 + pad, y: py - boxH / 2 },
+    { cx: px - bodyW - boxW / 2 - pad, y: py - boxH / 2 },
+    { cx: px, y: py + bodyH + pad },
+    { cx: px - bodyW, y: py - bodyH - boxH - pad },
+    { cx: px + bodyW, y: py - bodyH - boxH - pad },
+    { cx: px - bodyW, y: py + bodyH + pad },
+    { cx: px + bodyW, y: py + bodyH + pad },
+  ];
+
+  const obstacles = [
+    ...(layout.compBoxes || []).filter((b) => b.id !== compId),
+    ...(layout.placedLabels || []),
+  ];
+  const segs = layout.wireSegs || [];
+
+  for (const c of candidates) {
+    const bx = c.cx - boxW / 2;
+    if (!anyCollision(bx, c.y, boxW, boxH, obstacles, segs)) return c;
+  }
+  return candidates[0];
+}
+
+function anyCollision(x, y, w, h, boxes, segs) {
+  for (const b of boxes) {
+    if (x < b.x + b.w && x + w > b.x && y < b.y + b.h && y + h > b.y) return true;
+  }
+  for (const [a, b2] of segs) {
+    if (segIntersectsRect(a, b2, x, y, w, h)) return true;
+  }
+  return false;
+}
+
+function segIntersectsRect(a, b, x, y, w, h) {
+  const steps = 8;
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const px = a.x + (b.x - a.x) * t;
+    const py = a.y + (b.y - a.y) * t;
+    if (px >= x && px <= x + w && py >= y && py <= y + h) return true;
+  }
+  return false;
 }
 
 function drawSymbolArt(ctx, symbol, colors, lineWidth) {

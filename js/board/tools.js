@@ -488,10 +488,11 @@ export class BoardTools {
     }
   }
 
-  updateFloating(state) {
-    if (!this.floating) return;
-    const project = state.project;
-    const sel = (project.ui && project.ui.boardSelection) ?? [];
+  updateFloating(arg) {
+    if (!this.floating || !arg) return;
+    const project = arg.project || arg;
+    const ui = arg.ui || this.store.getUI?.() || project.ui || {};
+    const sel = ui.boardSelection ?? [];
     if (sel.length !== 1) {
       this.floating.hidden = true;
       return;
@@ -508,7 +509,7 @@ export class BoardTools {
     const offBtn = this.floating.querySelector('[data-action="offboard"]');
     if (offBtn) offBtn.textContent = comp?.offBoard ? 'On-board' : 'Off-board';
     const rect = this.canvas.getBoundingClientRect();
-    const view = project.ui.boardView ?? { pan: { x: 0, y: 0 }, zoom: 1 };
+    const view = ui.boardView ?? { pan: { x: 0, y: 0 }, zoom: 1 };
     const cell = project.board.holeSize ?? 24;
     const cx = (placed.col + 0.5) * cell * view.zoom + view.pan.x;
     const cy = placed.row * cell * view.zoom + view.pan.y - 4;
