@@ -820,13 +820,15 @@ async function boot() {
   if (typeof setProgress === 'function') {
     setProgress(90, 'Rendering');
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    render();
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     setProgress(100, 'Ready');
   }
 
   const overlayEl = document.getElementById('loading-overlay');
   if (overlayEl) {
     overlayEl.classList.add('is-hidden');
-    setTimeout(() => overlayEl.remove(), 250);
+    setTimeout(() => overlayEl.remove(), 400);
   }
 
   if (window.lucide) lucide.createIcons();
