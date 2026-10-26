@@ -301,6 +301,7 @@ Catatan:
 - Satu `(row,col)` maksimal satu cut drill; knife cut berada di antara dua hole.
 - `LinkWire.a !== LinkWire.b`.
 - `PlacedPart.pinHoles` harus konsisten dengan footprint + rotasi.
+- `partBounds` (isi bounding box for hit-test/rendering): untuk part fleksibel 2-kaki (resistor/kap/inductor/diode/LED/dll), sumbu tegak lurus badan tidak di-pad — part vertikal menempati **satu kolom** dan part horizontal satu baris; lebarnya mengikuti `leadsSpan`. Untuk part multi-pin, badan di-pad menurut `symbol.width/height` yang *ikut rotasi*.
 - `rows ≥ 1`, `cols ≥ 1`.
 - Nama net unik; warna diturunkan deterministik dari nama.
 - `schemaVersion` wajib; migrasi dilakukan saat load.
