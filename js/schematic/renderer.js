@@ -80,7 +80,7 @@ export class SchematicRenderer {
         else ctx.lineTo(x, y);
       }
       ctx.lineWidth = selected ? 3.5 : 2;
-      ctx.strokeStyle = selected ? colors.selection : net?.color ?? colors.wire;
+      ctx.strokeStyle = selected ? colors.selection : netStrokeColor(net, colors);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
@@ -206,7 +206,7 @@ export class SchematicRenderer {
         extras.hoverPin && extras.hoverPin.compId === comp.id && extras.hoverPin.pinId === pin.id;
       ctx.beginPath();
       ctx.arc(x, y, isHover ? 5 : 3, 0, Math.PI * 2);
-      ctx.fillStyle = net?.color ?? colors.wire;
+      ctx.fillStyle = netStrokeColor(net, colors);
       ctx.fill();
       if (isHover) {
         ctx.strokeStyle = colors.accent;
@@ -595,6 +595,14 @@ function readColors(canvas) {
     danger: get('--color-danger', '#dc2626'),
     accent: get('--color-accent', '#2563eb'),
   };
+}
+
+const LEGACY_DARK_NETS = new Set(['#111827', '#0b1220', '#1f2937']);
+
+export function netStrokeColor(net, colors) {
+  if (!net) return colors.wire;
+  if (LEGACY_DARK_NETS.has((net.color || '').toLowerCase())) return colors.wire;
+  return net.color || colors.wire;
 }
 
 export { readColors };

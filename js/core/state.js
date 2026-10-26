@@ -18,7 +18,7 @@ export const NET_COLORS = [
 ];
 
 export const FIXED_NET_COLORS = {
-  GND: '#111827',
+  GND: '#16a34a',
   VCC: '#dc2626',
   '5V': '#dc2626',
   '3V3': '#dc2626',
