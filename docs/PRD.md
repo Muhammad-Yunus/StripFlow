@@ -82,6 +82,8 @@ Prioritas memakai MoSCoW: **M**ust, **S**hould, **C**ould, **W**on't (v1).
 | SC-03 | Penempatan komponen dari library | M | Drag dari panel ke kanvas; snap ke grid; komponen baru otomatis dapat ref (R1, C1, ...). |
 | SC-04 | Rotasi & mirror | M | `R` rotasi 90°; `M` mirror; berlaku untuk seleksi. |
 | SC-05 | Wiring pin-to-pin / pin-to-grid | M | Klik ujung pin memulai wire; klik pin/titik/grid meneruskan; `Enter` selesai; `Backspace` mundur satu segmen. |
+| SC-05a | Wire tegak & lurus (orthogonal) | M | Setiap segmen wire baru hanya horizontal atau vertikal; target diagonal otomatis disisipi satu siku (elbow) hingga semua segmen axis-aligned; berlaku juga untuk preview kursor live. |
+| SC-05b | Auto-switch tool dari ujung konektor | M | Di mode select, klik pin (atau tepat di endpoint wire) otomatis pindah ke mode wire & mulai draft dari titik itu; di mode wire, klik badan simbol komponen meng-commit wire berjalan lalu kembali ke mode select dan memilih komponen itu. |
 | SC-06 | Aturan konektivitas "touching = connected" | M | Wire end di wire = nyambung; pin di wire = nyambung; dua pin satu titik = nyambung; wire menyilang tanpa junction = **tidak** nyambung. |
 | SC-07 | Junction dot & loose end marker | M | Junction otomatis saat 3+ koneksi; ujung wire bebas ditandai kotak berlubang. |
 | SC-08 | Net detection otomatis | M | Pin yang terhubung membentuk satu net; nama default `net1`, `net2`, ...; warna unik per net. |

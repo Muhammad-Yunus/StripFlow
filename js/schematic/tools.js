@@ -135,8 +135,30 @@ export class SchematicTools {
 
     const hit = this.renderer.hitTest(project, world, ui);
     if (hit.type === 'pin') {
+      this.store.setUI({ schematicTool: 'wire', schematicSelection: [] });
       this.startWireAt(hit.pos);
+      this.onRender();
       return;
+    }
+
+    // Clicking right on a wire endpoint ("connector end") starts a new wire
+    // from that endpoint and switches to the wire tool. Clicking the wire
+    // body falls through to normal select/drag.
+    if (hit.type === 'wire') {
+      const w = project.schematic.wires.find((x) => x.id === hit.id);
+      if (w && w.points.length >= 2) {
+        const a = w.points[0];
+        const b = w.points[w.points.length - 1];
+        const da = Math.hypot(a.x - world.x, a.y - world.y);
+        const db = Math.hypot(b.x - world.x, b.y - world.y);
+        if (Math.min(da, db) <= 0.5) {
+          const end = da <= db ? a : b;
+          this.store.setUI({ schematicTool: 'wire', schematicSelection: [] });
+          this.startWireAt({ x: end.x, y: end.y });
+          this.onRender();
+          return;
+        }
+      }
     }
 
     // Drag the ref/value label without moving the component body
@@ -366,32 +388,54 @@ export class SchematicTools {
   }
 
   wireClick(hit, world) {
-    if (!this.wire) {
-      if (hit.type === 'pin') {
-        this.startWireAt(hit.pos);
-        return;
+    let target;
+    if (hit.type === 'pin') {
+      target = { x: hit.pos.x, y: hit.pos.y };
+    } else if (hit.type === 'wire') {
+      const w = this.store.getProject().schematic.wires.find((x) => x.id === hit.id);
+      const p = { x: Math.round(world.x), y: Math.round(world.y) };
+      if (w) {
+        let best = null;
+        let bestD = Infinity;
+        for (const v of w.points) {
+          const d = Math.hypot(v.x - p.x, v.y - p.y);
+          if (d < bestD) {
+            bestD = d;
+            best = v;
+          }
+        }
+        target = best ?? p;
+      } else {
+        target = p;
       }
-      this.startWireAt({ x: Math.round(world.x), y: Math.round(world.y) });
+    } else {
+      target = { x: Math.round(world.x), y: Math.round(world.y) };
+    }
+
+    // Tapping a component symbol switches back to select and picks it up.
+    if (hit.type === 'component') {
+      this.finishWire();
+      this.store.setUI({ schematicTool: 'select', schematicSelection: [hit.id] });
+      this.onRender();
+      return;
+    }
+
+    if (!this.wire) {
+      this.startWireAt(target);
       return;
     }
 
     const last = this.wire.points[this.wire.points.length - 1];
-    let next;
-    if (hit.type === 'pin') next = { x: hit.pos.x, y: hit.pos.y };
-    else if (hit.type === 'wire' || hit.type === 'component') {
-      next = { x: Math.round(world.x), y: Math.round(world.y) };
-    } else {
-      next = { x: Math.round(world.x), y: Math.round(world.y) };
-    }
-
-    if (next.x === last.x && next.y === last.y) return;
-    this.wire.points.push(next);
+    if (target.x === last.x && target.y === last.y) return;
+    const corner = manhattanCorner(last, target);
+    if (corner) this.wire.points.push(corner);
+    this.wire.points.push(target);
 
     const finishing =
       hit.type === 'pin' ||
       hit.type === 'wire' ||
-      hit.type === 'component' ||
-      (hit.type === 'grid' && false);
+      hit.type === 'flag' ||
+      hit.type === 'label';
     if (finishing) this.finishWire();
     this.onRender();
   }
@@ -441,7 +485,12 @@ export class SchematicTools {
       const cursor = this.pointer
         ? { x: Math.round(this.pointer.x), y: Math.round(this.pointer.y) }
         : this.wire.cursor;
-      extras.previewWire = [...this.wire.points, cursor];
+      const pts = [...this.wire.points];
+      const last = pts[pts.length - 1];
+      const corner = manhattanCorner(last, cursor);
+      if (corner) pts.push(corner);
+      pts.push(cursor);
+      extras.previewWire = pts;
     }
     if (ui.pendingSymbol && this.pointer && !ui.pendingSymbol.startsWith('flag-') && ui.pendingSymbol !== 'net-label') {
       const hit = this.renderer.hitTest(project, this.pointer, ui);
@@ -470,6 +519,25 @@ export class SchematicTools {
     c.removeEventListener('contextmenu', this._bound.context);
     c.removeEventListener('dblclick', this._bound.dbl);
   }
+}
+
+/**
+ * Orthogonal ("Manhattan") connector between two wire points. Wires are
+ * restricted to straight horizontal/vertical segments: if the endpoints differ
+ * in both axes, insert the corner nearest to the cursor direction — going
+ * vertical first when the target is diagonally "above-left/below-left" is
+ * unnecessary; pick the elbow that reaches the target row/column first.
+ * @param {{x:number,y:number}} a
+ * @param {{x:number,y:number}} b
+ * @returns {{x:number,y:number}|null} corner point, or null when aligned
+ */
+function manhattanCorner(a, b) {
+  if (a.x === b.x || a.y === b.y) return null;
+  // Prefer the elbow that keeps segments axis-aligned and shortest overall:
+  // either (a.x, b.y) then to b, or (b.x, a.y) then to b. Both are valid
+  // Manhattan paths; pick the one whose first segment is horizontal so the
+  // wire leaves the anchor along its axis (components connect horizontally).
+  return { x: b.x, y: a.y };
 }
 
 void componentPinPos;
