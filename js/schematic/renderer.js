@@ -363,7 +363,10 @@ export class SchematicRenderer {
 }
 
 function drawSymbolArt(ctx, symbol, colors) {
+  const prev = ctx.lineWidth;
+  ctx.lineWidth = Math.max(0.35, prev * 0.5);
   const id = symbol.id;
+  try {
   if (id === 'resistor') return drawResistor(ctx);
   if (id === 'capacitor') return drawCapacitor(ctx, false);
   if (id === 'cap_pol') return drawCapacitor(ctx, true);
@@ -375,7 +378,12 @@ function drawSymbolArt(ctx, symbol, colors) {
   if (id.startsWith('conn')) return drawConnector(ctx, symbol);
   if (id === 'switch') return drawSwitch(ctx);
   if (id === 'pot') return drawPot(ctx);
-  return drawGeneric(ctx, symbol, colors);
+  const r = drawGeneric(ctx, symbol, colors);
+  ctx.lineWidth = prev;
+  return r;
+  } finally {
+    ctx.lineWidth = prev;
+  }
 }
 
 function lead(ctx, x1, y1, x2, y2) {
