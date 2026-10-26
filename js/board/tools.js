@@ -220,7 +220,8 @@ export class BoardTools {
       const dRow = Math.round(cell.row - this.drag.last.row);
       const dCol = Math.round(cell.col - this.drag.last.col);
       if (dRow !== 0 || dCol !== 0) {
-        const project = this.store.getProject();
+    const project = this.store.getProject ? this.store.getProject() : null;
+    if (!project || !project.ui) return;
         const placed = findPlaced(project, this.drag.compId);
         if (placed) {
           const maxRow = project.board.rows - 1;
