@@ -409,6 +409,7 @@ select {
   display: flex;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface-2);
+  min-height: 42px;
 }
 
 .sidebar__tab {
