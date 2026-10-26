@@ -530,7 +530,7 @@ function iconSvg(id) {
     case 'pot':
       return wrap('<rect x="-2" y="-.6" width="4" height="1.2" rx=".3"/><path d="M0-3v1.5M-.6-1.5 0-1l.6-.5"/>');
     case 'inductor':
-      return wrap('<path d="M-3 0h1.2M1.2 0h1.8"/><path d="M-1.6 0a.5.5 0 01.5-.5.5.5 0 01.5.5.5.5 0 01.5.5.5.5 0 01.5.5.5.5 0 01.5.5.5.5 0 01.5.5"/>');
+      return wrap('<path d="M-3 0h1.2"/><path d="M-1.8 0a.5.5 0 01.5-.5.5.5 0 01.5.5.5.5 0 01.5.5.5.5 0 01.5.5.5.5 0 01.5.5.5.5 0 01.5.5"/><path d="M1.2 0h1.8"/>');
     case 'flag-gnd':
       return wrap('<path d="M0-2v2M-1.4 0h2.8M-1 .6h2M-.5 1.2h1"/>');
     case 'flag-pwr':
