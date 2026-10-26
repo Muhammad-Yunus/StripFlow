@@ -13,7 +13,7 @@ import {
   toggleKnife,
   unplacePart,
 } from './commands.js';
-import { placementForAnchor, placementFits } from './model.js';
+import { placementForAnchor, placementFits, partBounds } from './model.js';
 import { showContextMenu } from '../ui/menus.js';
 
 export class BoardTools {
@@ -539,14 +539,34 @@ export class BoardTools {
     if (lockBtn) lockBtn.textContent = placed.locked ? 'Unlock' : 'Lock';
     const offBtn = this.floating.querySelector('[data-action="offboard"]');
     if (offBtn) offBtn.textContent = comp?.offBoard ? 'On-board' : 'Off-board';
+
     const rect = this.canvas.getBoundingClientRect();
     const view = ui.boardView ?? { pan: { x: 0, y: 0 }, zoom: 1 };
-    const cell = project.board.holeSize ?? 24;
-    const cx = (placed.col + 0.5) * cell * view.zoom + view.pan.x;
-    const cy = placed.row * cell * view.zoom + view.pan.y - 4;
+    const c = BOARD_HOLE * view.zoom;
+    const b = partBounds(project, placed);
+    // part bounding box in canvas-local pixels
+    const boxLeft = rect.left + view.pan.x + b.minCol * c;
+    const boxTop = rect.top + view.pan.y + b.minRow * c;
+    const boxW = (b.maxCol - b.minCol + 1) * c;
+    const boxH = (b.maxRow - b.minRow + 1) * c;
+    const boxCenterX = boxLeft + boxW / 2;
+
+    // toolbar metrics (CSS centers it via translateX(-50%), so left = center x)
+    const gap = 8;
+    const tw = this.floating.offsetWidth || 260;
+    const th = this.floating.offsetHeight || 34;
+
+    // prefer above the part; flip below when it would leave the canvas top
+    let top = boxTop - gap - th;
+    if (top < rect.top + 4) top = boxTop + boxH + gap;
+    // clamp horizontally so the toolbar stays inside the canvas
+    const half = tw / 2;
+    let left = boxCenterX;
+    left = Math.max(rect.left + half + 4, Math.min(left, rect.right - half - 4));
+
     this.floating.hidden = false;
-    this.floating.style.left = `${rect.left + cx}px`;
-    this.floating.style.top = `${rect.top + cy - 28}px`;
+    this.floating.style.left = `${left}px`;
+    this.floating.style.top = `${top}px`;
   }
 
   dispose() {
