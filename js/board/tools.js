@@ -32,7 +32,7 @@ export class BoardTools {
       this.updateFloating(state);
       this.onRender();
     });
-    this._resize = () => this.updateFloating(this.store.getState());
+    this._resize = () => this.updateFloating(this.store.getProject());
     window.addEventListener('resize', this._resize);
     this.drag = null;
     this.pan = null;
@@ -370,7 +370,7 @@ export class BoardTools {
     if (part) {
       this.store.setUI({ boardSelection: [part.compId] });
       this.onRender();
-      this.updateFloating(this.store.getState());
+      this.updateFloating(this.store.getProject());
       return;
     }
 
