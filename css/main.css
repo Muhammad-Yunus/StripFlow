@@ -176,8 +176,59 @@ select {
 
 .status {
   font-size: 11px;
-  color: var(--color-muted);
-  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  z-index: 9999;
+  transition: opacity 200ms ease;
+}
+
+.loading-overlay.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-modal {
+  width: min(320px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.loading-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.loading-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.loading-bar__fill {
+  height: 100%;
+  width: 10%;
+  background: var(--accent);
+  transition: width 200ms ease;
+}
+
+.loading-text {
+  font-size: 11px;
+  color: var(--muted);
 }
 
 .status[data-state="saved"] {

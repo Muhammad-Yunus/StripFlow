@@ -50,8 +50,16 @@ boot().catch((err) => {
 });
 
 async function boot() {
+  const overlay = document.getElementById('loading-overlay');
+  const bar = document.getElementById('loading-bar-fill');
+  const text = document.getElementById('loading-text');
+  const setProgress = (p, msg) => {
+    if (bar) bar.style.width = `${Math.max(5, Math.min(100, p))}%`;
+    if (text && msg) text.textContent = msg;
+  };
+  setProgress(10, 'Loading last project');
   const project = await loadInitialProject();
-  const interrupted = getSetting('sessionDirty', null);
+  setProgress(60, 'Initializing workspace');
   setSetting('sessionDirty', null);
   if (interrupted?.projectId === project.id) showRecoveryBanner(interrupted);
   document.getElementById('recovery-dismiss').addEventListener('click', () => {
@@ -812,6 +820,18 @@ async function boot() {
   setHint('board', '');
   initSplitter();
   render();
+
+  if (typeof setProgress === 'function') {
+    setProgress(90, 'Rendering');
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    setProgress(100, 'Ready');
+  }
+
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) {
+    overlay.classList.add('is-hidden');
+    setTimeout(() => overlay.remove(), 250);
+  }
 
   globalThis.__stripflow = { store, autosave, schematicTools, boardTools, renderer: schematicRenderer };
 }
