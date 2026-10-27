@@ -69,7 +69,7 @@ async function boot() {
   const schematicCanvas = document.getElementById('schematic-canvas');
   const boardCanvas = document.getElementById('board-canvas');
   const schematicRenderer = new SchematicRenderer(schematicCanvas, store);
-  const boardRenderer = new BoardRenderer(boardCanvas, store);
+  const boardRenderer = new BoardRenderer(boardCanvas, store, { onArtLoaded: () => schedule() });
 
   /** @type {'schematic'|'board'} */
   let activePanel = 'schematic';

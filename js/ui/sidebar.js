@@ -1,5 +1,5 @@
 import { allSymbols, SPECIAL_ITEMS } from '../schematic/library.js';
-import { PACKAGES, isFlexible } from '../board/packages.js';
+import { DEFAULT_LEAD_SPAN, PACKAGES, isFlexible } from '../board/packages.js';
 import { rotatePlaced, unplacePart } from '../board/commands.js';
 import { renameNet, setNetColor } from '../schematic/commands.js';
 import { showContextMenu } from './menus.js';
@@ -336,10 +336,10 @@ export class Sidebar {
       spanInput.min = '2';
       spanInput.max = String(maxSpan);
       spanInput.step = '2';
-      spanInput.value = String(Math.max(2, Math.round(placed.leadsSpan || 4)));
+      spanInput.value = String(Math.max(2, Math.round(placed.leadsSpan || DEFAULT_LEAD_SPAN)));
       spanInput.addEventListener('change', () => {
         let leadsSpan = Math.round(Number(spanInput.value));
-        if (!Number.isFinite(leadsSpan)) leadsSpan = 4;
+        if (!Number.isFinite(leadsSpan)) leadsSpan = DEFAULT_LEAD_SPAN;
         leadsSpan = Math.max(2, Math.min(maxSpan, leadsSpan));
         if (leadsSpan % 2 !== 0) leadsSpan += 1;
         spanInput.value = String(leadsSpan);

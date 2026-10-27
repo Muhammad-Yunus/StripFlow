@@ -1,0 +1,4 @@
+# Inline part art is shipped from js/schematic/library.js; the source SVG/XML
+# assets are not needed at runtime and stay out of the repo.
+assets/parts_svg/
+parts_svg/

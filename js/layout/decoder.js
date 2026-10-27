@@ -1,6 +1,6 @@
 import { rotateOffset } from '../core/geometry.js';
 import { findComponent, partBounds } from '../board/model.js';
-import { isFlexible } from '../board/packages.js';
+import { DEFAULT_LEAD_SPAN, isFlexible, boardFootprint } from '../board/packages.js';
 import { getSymbol } from '../schematic/library.js';
 import { pinKey } from '../schematic/netlist.js';
 import { packSequencePair } from './seqpair.js';
@@ -29,7 +29,8 @@ export function buildModel(project, nets) {
     // never packed or moved by the router.
     if (comp.offBoard && !existing) continue;
     const flexible = isFlexible(comp.symbolId) && symbol.pins.length === 2;
-    const leadsSpan = existing?.leadsSpan || 4;
+    const fp = boardFootprint(comp.symbolId);
+    const leadsSpan = existing?.leadsSpan || DEFAULT_LEAD_SPAN;
     const rots = ROTATIONS.map((rot) => {
       const placed = {
         compId: comp.id,
@@ -42,9 +43,9 @@ export function buildModel(project, nets) {
         packageId: existing?.packageId ?? '',
       };
       const bounds = partBounds(project, placed);
-      const pins = symbol.pins.map((def) => {
-        let off = def.offset;
-        if (flexible) {
+      const pins = symbol.pins.map((def, i) => {
+        let off = fp ? (fp.pins[i] ?? def.offset) : def.offset;
+        if (!fp && flexible) {
           const sign = Math.sign(off.x) || 1;
           off = { x: sign * (leadsSpan / 2), y: 0 };
         }
@@ -130,7 +131,7 @@ export function decode(project, model, state, options) {
       col: pos.x + margin - opt.minCol,
       rot: ROTATIONS[rotIndex] ?? 0,
       rotIndex,
-      leadsSpan: comp.existing?.leadsSpan || 4,
+      leadsSpan: comp.existing?.leadsSpan || DEFAULT_LEAD_SPAN,
       packageId: comp.packageId,
       locked: false,
     });
@@ -145,7 +146,7 @@ export function decode(project, model, state, options) {
       col: existing.col,
       rot: existing.rot,
       rotIndex,
-      leadsSpan: existing.leadsSpan || 4,
+      leadsSpan: existing.leadsSpan || DEFAULT_LEAD_SPAN,
       packageId: existing.packageId || comp.packageId,
       locked: true,
     });

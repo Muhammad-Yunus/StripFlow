@@ -307,3 +307,163 @@ export function symbolSize(symbolId) {
   const s = byId.get(symbolId);
   return s ? { w: s.width, h: s.height } : { w: 4, h: 2 };
 }
+
+const dipArt =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4.6 -4.9 9.2 9.8">' +
+  [
+    [-3.81, -4.13],
+    [-3.81, -1.59],
+    [-3.81, 0.95],
+    [-3.81, 3.49],
+    [3.21, 3.49],
+    [3.21, 0.95],
+    [3.21, -1.59],
+    [3.21, -4.13],
+  ]
+    .map(([xx, yy]) => `<rect x="${xx}" y="${yy}" width="0.6" height="0.64" fill="#b9bec2" fill-opacity="0.9"/>`)
+    .join('') +
+  '<rect x="-3.21" y="-4.51" width="6.42" height="9.02" rx="0.3" fill="#2b2b2b" fill-opacity="0.85" stroke="#4a90e2" stroke-width="0.26"/>' +
+  '<circle cx="-1.44" cy="-3.51" r="0.6" fill="rgba(255,255,255,0.22)"/>' +
+  '</svg>';
+
+/**
+ * Board-view art per built-in symbol. Each entry holds a self-contained SVG
+ * (literal colors, no CSS variables or baked-in labels) that depicts the
+ * physical top of the part, plus its local width/height (viewBox extents) used
+ * to letterbox the art inside a part's bounding box. Sourced from
+ * `assets/parts_svg/`. Custom symbols and unmapped built-ins intentionally
+ * have no art and fall back to a plain body.
+ *
+ * @typedef {{svg:string, aw:number, ah:number}} BoardArt
+ * @type {Record<string, BoardArt>}
+ */
+const BOARD_ART = {
+  resistor: {
+    aw: 10.8,
+    ah: 3.4,
+    svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5.4 -1.7 10.8 3.4">' +
+      '<line x1="-5.08" y1="0" x2="-3.15" y2="0" stroke="#8d9499" stroke-width="0.55" stroke-linecap="round"/>' +
+      '<line x1="3.15" y1="0" x2="5.08" y2="0" stroke="#8d9499" stroke-width="0.55" stroke-linecap="round"/>' +
+      '<path d="M -2.7 -1.2 L -1.75 -1.2 C -1.5 -1.2 -1.5 -1 -1.26 -1 L 1.26 -1 C 1.5 -1 1.5 -1.2 1.75 -1.2 L 2.7 -1.2 Q 3.15 -1.2 3.15 -0.75 L 3.15 0.75 Q 3.15 1.2 2.7 1.2 L 1.75 1.2 C 1.5 1.2 1.5 1 1.26 1 L -1.26 1 C -1.5 1 -1.5 1.2 -1.75 1.2 L -2.7 1.2 Q -3.15 1.2 -3.15 0.75 L -3.15 -0.75 Q -3.15 -1.2 -2.7 -1.2 Z" fill="#d7c3a1" fill-opacity="0.9" stroke="#8d9499" stroke-width="0.26" stroke-linejoin="round"/>' +
+      '</svg>',
+  },
+  inductor: {
+    aw: 10.2,
+    ah: 4.8,
+    svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5.1 -2.4 10.2 4.8">' +
+      '<line x1="-5.08" y1="0" x2="-4.5" y2="0" stroke="#8d9499" stroke-width="0.55" stroke-linecap="round"/>' +
+      '<line x1="4.5" y1="0" x2="5.08" y2="0" stroke="#8d9499" stroke-width="0.55" stroke-linecap="round"/>' +
+      '<rect x="-3.4" y="-1.806" width="6.8" height="3.612" rx="0.632" fill="#b87333" fill-opacity="0.9" stroke="#8d9499" stroke-width="0.12"/>' +
+      [
+        -3.0033, -2.4367, -1.87, -1.3033, -0.7367, -0.17, 0.3967, 0.9633, 1.53, 2.0967, 2.6633, 3.0033,
+      ]
+        .map((xx) => `<line x1="${xx}" y1="-1.5893" x2="${xx + 0.34}" y2="1.5893" stroke="#7a4519" stroke-width="0.13" stroke-linecap="round"/>`)
+        .join('') +
+      '<rect x="-4.5" y="-2.1" width="1.1" height="4.2" rx="0.275" fill="#5a5f63" fill-opacity="0.9" stroke="#8d9499" stroke-width="0.12"/>' +
+      '<rect x="3.4" y="-2.1" width="1.1" height="4.2" rx="0.275" fill="#5a5f63" fill-opacity="0.9" stroke="#8d9499" stroke-width="0.12"/>' +
+      '</svg>',
+  },
+  capacitor: {
+    aw: 10.8,
+    ah: 3.4,
+    svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5.4 -1.7 10.8 3.4">' +
+      '<line x1="-5.08" y1="0" x2="-2.5" y2="0" stroke="#8d9499" stroke-width="0.55" stroke-linecap="round"/>' +
+      '<line x1="2.5" y1="0" x2="5.08" y2="0" stroke="#8d9499" stroke-width="0.55" stroke-linecap="round"/>' +
+      '<rect x="-2.5" y="-1.2" width="5" height="2.4" rx="1.2" fill="#c89b4a" fill-opacity="0.9" stroke="#8d9499" stroke-width="0.12"/>' +
+      '</svg>',
+  },
+  cap_pol: {
+    aw: 4,
+    ah: 5,
+    svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2.5 4 5">' +
+      '<circle cx="0" cy="0" r="1.8" fill="#20395c" fill-opacity="0.85" stroke="#4a90e2" stroke-width="0.16"/>' +
+      '<circle cx="0" cy="0" r="1.4" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="0.1"/>' +
+      '<text x="-0.62" y="-0.35" text-anchor="middle" font-size="0.9" fill="#f7f7f7">+</text>' +
+      '</svg>',
+  },
+  switch: {
+    aw: 5.11,
+    ah: 2.1,
+    svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2.555 -1.05 5.11 2.1">' +
+      '<rect x="-2.555" y="-1.05" width="5.11" height="2.1" rx="0.15" fill="#1c1c1c" fill-opacity="0.82" stroke="#555" stroke-width="0.06"/>' +
+      '<rect x="-0.128" y="-0.7" width="1.405" height="1.4" rx="0.1" fill="#d8dcde" fill-opacity="0.82" stroke="#555" stroke-width="0.06"/>' +
+      '</svg>',
+  },
+  diode: {
+    aw: 10.8,
+    ah: 3.6,
+    svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5.4 -1.8 10.8 3.6">' +
+      '<line x1="-5.08" y1="0" x2="-2.5" y2="0" stroke="#8d9499" stroke-width="0.55" stroke-linecap="round"/>' +
+      '<line x1="2.5" y1="0" x2="5.08" y2="0" stroke="#8d9499" stroke-width="0.55" stroke-linecap="round"/>' +
+      '<rect x="-2.5" y="-1.3" width="5" height="2.6" rx="0.728" fill="#262626" fill-opacity="0.9" stroke="#8d9499" stroke-width="0.12"/>' +
+      '<rect x="1.2" y="-1.3" width="0.8" height="2.6" fill="#d9d9d9" fill-opacity="0.9"/>' +
+      '</svg>',
+  },
+  led: {
+    aw: 5.2,
+    ah: 6.4,
+    svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2.6 -3.2 5.2 6.4">' +
+      '<rect x="-1.6" y="-2.8" width="3.2" height="5.6" rx="1.5" fill="#b9c6d1" fill-opacity="0.9" stroke="#8d9499" stroke-width="0.26"/>' +
+      '<rect x="-0.9" y="-2" width="1.8" height="4" rx="0.9" fill="#d7e3ec" fill-opacity="0.9"/>' +
+      '</svg>',
+  },
+  npn: {
+    aw: 6,
+    ah: 6,
+    svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 6 6">' +
+      '<line x1="0" y1="1.27" x2="0" y2="2.54" stroke="#b9bec2" stroke-width="0.5" stroke-linecap="round"/>' +
+      '<line x1="0" y1="-1.27" x2="0" y2="-2.54" stroke="#b9bec2" stroke-width="0.5" stroke-linecap="round"/>' +
+      '<path d="M 1.25 -2.05 L 1.25 2.05 A 2.4 2.4 0 1 1 1.25 -2.05 Z" fill="#1c1c1c" fill-opacity="0.85" stroke="#8d9499" stroke-width="0.26"/>' +
+      '<path d="M -0.2 -1.1 L 0.6 0 L -0.2 1.1" fill="none" stroke="#d7dde2" stroke-width="0.3" stroke-linecap="round"/>' +
+      '</svg>',
+  },
+  pnp: {
+    aw: 6,
+    ah: 6,
+    svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 6 6">' +
+      '<line x1="0" y1="1.27" x2="0" y2="2.54" stroke="#b9bec2" stroke-width="0.5" stroke-linecap="round"/>' +
+      '<line x1="0" y1="-1.27" x2="0" y2="-2.54" stroke="#b9bec2" stroke-width="0.5" stroke-linecap="round"/>' +
+      '<path d="M 1.25 -2.05 L 1.25 2.05 A 2.4 2.4 0 1 1 1.25 -2.05 Z" fill="#1c1c1c" fill-opacity="0.85" stroke="#8d9499" stroke-width="0.26"/>' +
+      '<path d="M 0.6 -1.1 L -0.2 0 L 0.6 1.1" fill="none" stroke="#d7dde2" stroke-width="0.3" stroke-linecap="round"/>' +
+      '</svg>',
+  },
+  opamp: {
+    aw: 9.2,
+    ah: 9.8,
+    svg: dipArt,
+  },
+  ic8: {
+    aw: 9.2,
+    ah: 9.8,
+    svg: dipArt,
+  },
+  conn2: {
+    aw: 5.6,
+    ah: 6.2,
+    svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2.8 -3.1 5.6 6.2">' +
+      '<rect x="-1.27" y="-2.54" width="2.54" height="5.08" rx="0.2" fill="#1e1e1e" fill-opacity="0.85" stroke="#4a90e2" stroke-width="0.26"/>' +
+      '<rect x="-0.85" y="-2.12" width="1.7" height="1.7" rx="0.255" fill="#c9a227" fill-opacity="0.9"/>' +
+      '<rect x="-0.85" y="0.42" width="1.7" height="1.7" rx="0.255" fill="#c9a227" fill-opacity="0.9"/>' +
+      '</svg>',
+  },
+};
+
+/**
+ * Return the board-view art for a built-in symbol, or null when the symbol has
+ * no dedicated art (custom components, unmapped built-ins).
+ * @param {string} symbolId
+ * @returns {{svg:string, aw:number, ah:number}|null}
+ */
+export function getBoardArt(symbolId) {
+  return BOARD_ART[symbolId] ?? null;
+}

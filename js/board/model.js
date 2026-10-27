@@ -1,6 +1,6 @@
 import { rotateOffset } from '../core/geometry.js';
 import { getSymbol } from '../schematic/library.js';
-import { isFlexible } from './packages.js';
+import { DEFAULT_LEAD_SPAN, isFlexible, boardFootprint } from './packages.js';
 
 /** @param {import('../core/types.js').Project} project @param {string} compId */
 export function findComponent(project, compId) {
@@ -24,11 +24,14 @@ export function computePinHoles(project, placed) {
   const symbol = getSymbol(comp.symbolId, project.customSymbols);
   if (!symbol) return [];
   const flexible = isFlexible(comp.symbolId) && symbol.pins.length === 2;
+  const fp = boardFootprint(comp.symbolId);
 
-  return symbol.pins.map((def) => {
+  return symbol.pins.map((def, i) => {
     let off = def.offset;
-    if (flexible) {
-      let span = Math.max(2, Math.round(placed.leadsSpan || 4));
+    if (fp) {
+      off = fp.pins[i] ?? def.offset;
+    } else if (flexible) {
+      let span = Math.max(2, Math.round(placed.leadsSpan || DEFAULT_LEAD_SPAN));
       if (span % 2 !== 0) span += 1;
       const sign = Math.sign(off.x) || 1;
       off = { x: sign * (span / 2), y: 0 };
@@ -50,6 +53,7 @@ export function computePinHoles(project, placed) {
 export function partBounds(project, placed) {
   const comp = findComponent(project, placed.compId);
   const symbol = comp ? getSymbol(comp.symbolId, project.customSymbols) : null;
+  const fp = comp ? boardFootprint(comp.symbolId) : null;
   const holes = computePinHoles(project, placed);
   let minRow = placed.row;
   let maxRow = placed.row;
@@ -60,6 +64,25 @@ export function partBounds(project, placed) {
     maxRow = Math.max(maxRow, h.row);
     minCol = Math.min(minCol, h.col);
     maxCol = Math.max(maxCol, h.col);
+  }
+  if (fp && symbol) {
+    // Fixed board footprint: expand the box to the footprint's local box
+    // (rotated with the part) so round bodies like cap_pol render large.
+    const rot = ((placed.rot % 360) + 360) % 360;
+    const corners = [
+      { x: fp.box.x0, y: fp.box.y0 },
+      { x: fp.box.x1, y: fp.box.y0 },
+      { x: fp.box.x0, y: fp.box.y1 },
+      { x: fp.box.x1, y: fp.box.y1 },
+    ];
+    for (const cr of corners) {
+      const r = rotateOffset(cr, rot);
+      minCol = Math.min(minCol, placed.col + r.x);
+      maxCol = Math.max(maxCol, placed.col + r.x);
+      minRow = Math.min(minRow, placed.row + r.y);
+      maxRow = Math.max(maxRow, placed.row + r.y);
+    }
+    return { minRow, maxRow, minCol, maxCol };
   }
   // Two-pin flexible parts sit on the pin column: their body is thin, so do not
   // pad the perpendicular axis — a vertical part keeps a single column.
@@ -114,11 +137,14 @@ export function placementForAnchor(project, compId, row, col) {
   const comp = findComponent(project, compId);
   const symbol = comp ? getSymbol(comp.symbolId, project.customSymbols) : null;
   if (!comp || !symbol) return null;
-  const first = symbol.pins[0]?.offset ?? { x: 0, y: 0 };
+  const fp = boardFootprint(comp.symbolId);
+  const first = fp ? fp.pins[0] : symbol.pins[0]?.offset ?? { x: 0, y: 0 };
   const flexible = isFlexible(comp.symbolId) && symbol.pins.length === 2;
-  const anchorOffset = flexible
-    ? { x: -Math.sign(first.x || 1) * 2, y: 0 }
-    : first;
+  const anchorOffset = fp
+    ? first
+    : flexible
+      ? { x: -Math.sign(first.x || 1) * (DEFAULT_LEAD_SPAN / 2), y: 0 }
+      : first;
   const rot = 0;
   const r = rotateOffset(anchorOffset, rot);
   return {
@@ -126,7 +152,7 @@ export function placementForAnchor(project, compId, row, col) {
     row: row - r.y,
     col: col - r.x,
     rot,
-    leadsSpan: 4,
+    leadsSpan: DEFAULT_LEAD_SPAN,
     flat: true,
     locked: false,
     packageId: symbol.packageId ?? 'pin_header',

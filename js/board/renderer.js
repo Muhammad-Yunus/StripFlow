@@ -1,10 +1,64 @@
 import { BOARD_HOLE } from '../core/geometry.js';
-import { getSymbol } from '../schematic/library.js';
+import { getSymbol, getBoardArt } from '../schematic/library.js';
 import { computePinHoles, findComponent, partBounds } from './model.js';
 
+/**
+ * Lazily-decoded board art images, keyed by the art's svg string. Each entry
+ * holds one in-flight decode promise plus the resulting HTMLImageElement once
+ * ready. Bounded by the number of distinct built-in arts, not per-part.
+ * @type {Map<string, {promise:Promise<HTMLImageElement>|null, img:HTMLImageElement|null}>}
+ */
+const artImages = new Map();
+
+/**
+ * Return a decoded image for the given board art, or null if not yet ready
+ * (in which case a decode is kicked off). No-ops outside a browser so the
+ * module stays importable from Node.
+ * @param {{svg:string, aw:number, ah:number}} art
+ * @param {(symbolId:string)=>void} [onLoaded]
+ * @returns {HTMLImageElement|null}
+ */
+function getArtImage(art, onLoaded = () => {}) {
+  if (typeof globalThis.Image !== 'function' || !globalThis.btoa) return null;
+  const key = art.aw + ':' + art.ah + ':' + art.svg.length;
+  let entry = artImages.get(key);
+  if (!entry) {
+    entry = { promise: null, img: null };
+    artImages.set(key, entry);
+  }
+  if (entry.img) return entry.img;
+  if (!entry.promise) {
+    const url = 'data:image/svg+xml;base64,' + globalThis.btoa(unescape(encodeURIComponent(art.svg)));
+    const img = new globalThis.Image();
+    img.onload = () => {
+      entry.img = img;
+      onLoaded(key);
+    };
+    img.onerror = () => {};
+    img.src = url;
+    entry.promise = Promise.resolve(img);
+  }
+  return null;
+}
+
+/**
+ * Two-terminal flexible parts whose art is close enough to the physical shape
+ * that a body box behind it would only clutter the board view.
+ * @type {Set<string>}
+ */
+const BOXLESS_SYMBOLS = new Set([
+  'resistor',
+  'capacitor',
+  'cap_pol',
+  'diode',
+  'inductor',
+  'switch',
+  'conn2',
+]);
+
 export class BoardRenderer {
-  /** @param {HTMLCanvasElement} canvas @param {import('../core/store.js').Store} store */
-  constructor(canvas, store) {
+  /** @param {HTMLCanvasElement} canvas @param {import('../core/store.js').Store} store @param {{onArtLoaded?:()=>void}} [opts] */
+  constructor(canvas, store, opts = {}) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.store = store;
@@ -12,6 +66,7 @@ export class BoardRenderer {
     this.width = 1;
     this.height = 1;
     this.pointer = null;
+    this.onArtLoaded = opts.onArtLoaded ?? (() => {});
     this.resize();
     new ResizeObserver(() => this.resize()).observe(canvas.parentElement ?? canvas);
   }
@@ -234,12 +289,13 @@ export class BoardRenderer {
     const h = (bounds.maxRow - bounds.minRow + 1) * c;
     const offBoard = Boolean(comp.offBoard);
 
-    // body
+    // body (skipped for boxless symbols — their physical art is drawn on top)
+    const boxless = BOXLESS_SYMBOLS.has(comp.symbolId);
     ctx.fillStyle = colors.body;
     ctx.strokeStyle = selected ? colors.accent : offBoard ? colors.muted : colors.text;
     ctx.lineWidth = selected ? 2 : 1.1;
     ctx.globalAlpha = offBoard ? 0.55 : 0.92;
-    if (w > c * 1.1 || h > c * 1.1) {
+    if (!boxless && (w > c * 1.1 || h > c * 1.1)) {
       ctx.beginPath();
       ctx.roundRect(x + c * 0.12, y + c * 0.12, w - c * 0.24, h - c * 0.24, 3);
       if (!offBoard) ctx.fill();
@@ -248,6 +304,46 @@ export class BoardRenderer {
       ctx.setLineDash([]);
     }
     ctx.globalAlpha = 1;
+
+    // physical top-down art (built-in symbols), letterboxed inside the part's
+    // bounds and rotated with the part so the pin axis always matches
+    const art = offBoard ? null : getBoardArt(comp.symbolId);
+    const artImg = art ? getArtImage(art, () => this.onArtLoaded()) : null;
+    const boxCx = x + w / 2;
+    const boxCy = y + h / 2;
+    const intW = Math.max(1, w - c * 0.24);
+    const intH = Math.max(1, h - c * 0.24);
+    if (art && artImg) {
+      // The art's pin axis is its X (aw). At 90/270 the box's tall span belongs
+      // to that axis; at 0/180 the wide span does. Map each art axis to the
+      // matching board span before the canvas rotation.
+      const vertical = placed.rot === 90 || placed.rot === 270;
+      const spanX = vertical ? intH : intW;
+      const spanY = vertical ? intW : intH;
+      const s = Math.max(1, Math.min(spanX / art.aw, spanY / art.ah));
+      const dw = art.aw * s;
+      const dh = art.ah * s;
+      ctx.save();
+      ctx.translate(boxCx, boxCy);
+      ctx.rotate(((placed.rot || 0) * Math.PI) / 180);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(artImg, -dw / 2, -dh / 2, dw, dh);
+      ctx.restore();
+    } else if (boxless && !offBoard) {
+      // Art not ready (still decoding) or no art available: leave a faint dashed
+      // outline so the part is not invisible during that frame.
+      ctx.save();
+      ctx.translate(boxCx, boxCy);
+      ctx.rotate(((placed.rot || 0) * Math.PI) / 180);
+      ctx.globalAlpha = 0.4;
+      ctx.strokeStyle = selected ? colors.accent : colors.muted;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.strokeRect(-intW / 2, -intH / 2, intW, intH);
+      ctx.setLineDash([]);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
 
     // pins (off-board parts only leave solder pads behind)
     const holes = computePinHoles(project, placed);
