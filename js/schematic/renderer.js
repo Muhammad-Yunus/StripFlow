@@ -615,10 +615,10 @@ function drawOpamp(ctx, symbol, comp) {
   const ids = new Set(pins.map((p) => p.id));
   if (ids.has('outA')) {
     // Dual op-amp (TL072): two stacked channels sharing +V / -V.
-    opampHalf(ctx, -1.5);
-    opampHalf(ctx, 1.5);
-    lead(ctx, 0, -3, 0, -2.5);
-    lead(ctx, 0, 3, 0, 2.5);
+    opampHalf(ctx, -1.8);
+    opampHalf(ctx, 1.8);
+    lead(ctx, 0, -3, 0, -2.8);
+    lead(ctx, 0, 3, 0, 2.8);
     return;
   }
   // Legacy single op-amp (5 pins).
@@ -642,25 +642,26 @@ function drawOpamp(ctx, symbol, comp) {
 }
 
 /**
- * One op-amp channel: a slim 1.5x2 triangle centred at cy. Left edge at
- * x=-0.75, output tip at x=0.75; inputs on the left edge, output off the tip.
+ * One op-amp channel: triangle centred at cy. Left edge at x=-1.5, output
+ * tip at x=2; input/output leads run from x=∓2 (where the pin dots sit) to
+ * the triangle edges, so every dot lands exactly on a line end.
  */
 function opampHalf(ctx, cy) {
-  lead(ctx, -1.5, cy - 0.5, -0.75, cy - 0.5);
-  lead(ctx, -1.5, cy + 0.5, -0.75, cy + 0.5);
-  lead(ctx, 0.75, cy, 1.5, cy);
+  lead(ctx, -2, cy - 0.5, -1.5, cy - 0.5);
+  lead(ctx, -2, cy + 0.5, -1.5, cy + 0.5);
+  lead(ctx, 1.5, cy, 2, cy);
   ctx.beginPath();
-  ctx.moveTo(-0.75, cy - 1);
-  ctx.lineTo(-0.75, cy + 1);
-  ctx.lineTo(0.75, cy);
+  ctx.moveTo(-1.5, cy - 1);
+  ctx.lineTo(-1.5, cy + 1);
+  ctx.lineTo(2, cy);
   ctx.closePath();
   ctx.stroke();
   ctx.font = '0.45px system-ui, sans-serif';
   ctx.fillStyle = ctx.strokeStyle;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText('-', -0.5, cy - 0.5);
-  ctx.fillText('+', -0.5, cy + 0.5);
+  ctx.fillText('-', -1.2, cy - 0.5);
+  ctx.fillText('+', -1.2, cy + 0.5);
 }
 
 function drawIC(ctx, symbol) {
