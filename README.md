@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="docs/img/main_banner.jpg" alt="StripFlow" width="100%"/>
+</p>
+
+<p align="center">
   <strong>Schematic → stripboard layout, browser-only, zero backend.</strong><br/>
   Draw a circuit, place parts on a virtual veroboard, let simulated-annealing auto-layout resolve cuts &amp; link wires, then print a 1:1 build template.
 </p>
