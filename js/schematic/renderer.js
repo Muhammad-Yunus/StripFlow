@@ -265,7 +265,7 @@ export class SchematicRenderer {
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
 
-    drawSymbolArt(ctx, symbol, colors, compLineWidth);
+    drawSymbolArt(ctx, symbol, colors, compLineWidth, comp);
 
     ctx.restore();
 
@@ -489,7 +489,7 @@ function segIntersectsRect(a, b, x, y, w, h) {
   return false;
 }
 
-function drawSymbolArt(ctx, symbol, colors, lineWidth) {
+function drawSymbolArt(ctx, symbol, colors, lineWidth, comp) {
   ctx.lineWidth = lineWidth;
   const id = symbol.id;
   if (id === 'resistor') return drawResistor(ctx);
@@ -498,7 +498,7 @@ function drawSymbolArt(ctx, symbol, colors, lineWidth) {
   if (id === 'diode') return drawDiode(ctx, false);
   if (id === 'led') return drawDiode(ctx, true);
   if (id === 'npn' || id === 'pnp') return drawTransistor(ctx, id === 'pnp');
-  if (id === 'opamp') return drawOpamp(ctx, symbol);
+  if (id === 'opamp') return drawOpamp(ctx, symbol, comp);
   if (id.startsWith('ic')) return drawIC(ctx, symbol);
   if (id.startsWith('conn')) return drawConnector(ctx, symbol);
   if (id === 'switch') return drawSwitch(ctx);
@@ -610,8 +610,9 @@ function drawTransistor(ctx, pnp) {
   ctx.stroke();
 }
 
-function drawOpamp(ctx, symbol) {
-  const ids = new Set((symbol.pins || []).map((p) => p.id));
+function drawOpamp(ctx, symbol, comp) {
+  const pins = (comp && comp.pins) || symbol.pins || [];
+  const ids = new Set(pins.map((p) => p.id));
   if (ids.has('outA')) {
     // Dual op-amp (TL072): two stacked channels sharing +V / -V.
     opampHalf(ctx, -2);
