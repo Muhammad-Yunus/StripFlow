@@ -280,7 +280,7 @@ export class SchematicRenderer {
         extras.hoverPin && extras.hoverPin.compId === comp.id && extras.hoverPin.pinId === pin.id;
       ctx.beginPath();
       ctx.arc(x, y, isHover ? 5 : 3, 0, Math.PI * 2);
-      ctx.fillStyle = netStrokeColor(net, colors);
+      ctx.fillStyle = pinDotColor(comp, pin, net, colors);
       ctx.fill();
       if (isHover) {
         ctx.strokeStyle = colors.accent;
@@ -642,26 +642,25 @@ function drawOpamp(ctx, symbol, comp) {
 }
 
 /**
- * One op-amp channel: a 3x2 triangle centred at cy with input/output leads.
- * Left edge at x=-1.5, output tip at x=1.5; inputs on the left edge, output
- * off the tip. Proportions stay square-ish (3 wide : 2 tall) when stacked.
+ * One op-amp channel: a slim 1.5x2 triangle centred at cy. Left edge at
+ * x=-0.75, output tip at x=0.75; inputs on the left edge, output off the tip.
  */
 function opampHalf(ctx, cy) {
-  lead(ctx, -2, cy - 0.5, -1.5, cy - 0.5);
-  lead(ctx, -2, cy + 0.5, -1.5, cy + 0.5);
-  lead(ctx, 1.5, cy, 2, cy);
+  lead(ctx, -1.5, cy - 0.5, -0.75, cy - 0.5);
+  lead(ctx, -1.5, cy + 0.5, -0.75, cy + 0.5);
+  lead(ctx, 0.75, cy, 1.5, cy);
   ctx.beginPath();
-  ctx.moveTo(-1.5, cy - 1);
-  ctx.lineTo(-1.5, cy + 1);
-  ctx.lineTo(1.5, cy);
+  ctx.moveTo(-0.75, cy - 1);
+  ctx.lineTo(-0.75, cy + 1);
+  ctx.lineTo(0.75, cy);
   ctx.closePath();
   ctx.stroke();
-  ctx.font = '0.5px system-ui, sans-serif';
+  ctx.font = '0.45px system-ui, sans-serif';
   ctx.fillStyle = ctx.strokeStyle;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText('-', -1.1, cy - 0.5);
-  ctx.fillText('+', -1.1, cy + 0.5);
+  ctx.fillText('-', -0.5, cy - 0.5);
+  ctx.fillText('+', -0.5, cy + 0.5);
 }
 
 function drawIC(ctx, symbol) {
@@ -764,6 +763,23 @@ export function netStrokeColor(net, colors) {
   if (!net) return colors.wire;
   if (LEGACY_DARK_NETS.has((net.color || '').toLowerCase())) return colors.wire;
   return net.color || colors.wire;
+}
+
+/**
+ * Pick a pin-dot colour. Op-amp pins are coded by role so each of the eight
+ * leads reads clearly: supply pins in the danger colour, signal outputs in the
+ * accent colour, inputs follow their net (falling back to the wire colour).
+ * @param {{symbolId:string}} comp
+ * @param {{type?:string}} pin
+ * @param {{name:string,color?:string}|null} net
+ * @param {ReturnType<typeof readColors>} colors
+ */
+function pinDotColor(comp, pin, net, colors) {
+  if (comp.symbolId === 'opamp') {
+    if (pin.type === 'power') return colors.danger;
+    if (pin.type === 'output') return colors.accent;
+  }
+  return netStrokeColor(net, colors);
 }
 
 export { readColors };
