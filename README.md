@@ -9,14 +9,20 @@
   <img alt="Status" src="https://img.shields.io/badge/status-beta-informational.svg"/>
   <img alt="JS" src="https://img.shields.io/badge/javascript-ES2022-8c47ff.svg"/>
   <img alt="No build step" src="https://img.shields.io/badge/build-none-2ea44f.svg"/>
-  <img alt="Client only" src="https://img.shields.io/badge/privacy-client--only-green.svg"/>
   <img alt="Lines" src="https://img.shields.io/badge/lines-8.7k-yellowgreen.svg"/>
 </p>
 
 <br/>
 
 <p align="center">
-  <code>client-only</code> · <code>canvas-2d</code> · <code>indexeddb</code> · <code>web-worker</code> · <code>vanilla-js</code> · <code>es-modules</code> · <code>print-1-to-1</code> · <code>kicad-netlist</code>
+  <img alt="client-only" src="https://img.shields.io/badge/client--only-orange.svg"/>
+  <img alt="canvas-2d" src="https://img.shields.io/badge/canvas--2d-orange.svg"/>
+  <img alt="indexeddb" src="https://img.shields.io/badge/indexeddb-orange.svg"/>
+  <img alt="web-worker" src="https://img.shields.io/badge/web--worker-orange.svg"/>
+  <img alt="vanilla-js" src="https://img.shields.io/badge/vanilla--js-orange.svg"/>
+  <img alt="es-modules" src="https://img.shields.io/badge/es--modules-orange.svg"/>
+  <img alt="print-1-to-1" src="https://img.shields.io/badge/print--1--to--1-orange.svg"/>
+  <img alt="kicad-netlist" src="https://img.shields.io/badge/kicad--netlist-orange.svg"/>
 </p>
 
 <p align="center">
@@ -80,11 +86,12 @@ High-level data flow (details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)):
  user input ─► ui/* (events) ─► store.js (immutable state + history)
                                     │  event bus
         ┌───────────────────────────┴──────────────────────────────┐
-        ▼                                                           ▼
+        ▼                                                          ▼
  SchematicRenderer (Canvas 2D, read-only)              BoardRenderer (Canvas 2D, read-only)
-        │                                               │
-        └──────► auto-layout (Web Worker) ◄────────────┘
+        │                                                          │
+        └──────► auto-layout (Web Worker) ◄────────────────────────┘
                   sequence pair → anneal → decode
+				  │
                   └──► new immutable board state ──► re-render
 ```
 
@@ -97,7 +104,7 @@ Core rules:
 
 ## Documentation
 
-| | |
+| File|Desc |
 |---|---|
 | [PRD](docs/PRD.md) | Scope, feature list, acceptance criteria, benchmarks |
 | [Architecture](docs/ARCHITECTURE.md) | Module map, data model, state/undo, rendering, conflict detection, auto-layout |
