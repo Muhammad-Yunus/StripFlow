@@ -91,7 +91,7 @@ High-level data flow (details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)):
         │                                                          │
         └──────► auto-layout (Web Worker) ◄────────────────────────┘
                   sequence pair → anneal → decode
-				  │
+                  │
                   └──► new immutable board state ──► re-render
 ```
 
