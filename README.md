@@ -6,23 +6,15 @@
 <br/>
 
 <p align="center">
-  <img alt="Status" src="https://img.shields.io/badge/status-beta-informational.svg"/>
-  <img alt="JS" src="https://img.shields.io/badge/javascript-ES2022-8c47ff.svg"/>
-  <img alt="No build step" src="https://img.shields.io/badge/build-none-2ea44f.svg"/>
-  <img alt="Lines" src="https://img.shields.io/badge/lines-8.7k-yellowgreen.svg"/>
-</p>
-
-<br/>
-
-<p align="center">
-  <img alt="client-only" src="https://img.shields.io/badge/client--only-orange.svg"/>
-  <img alt="canvas-2d" src="https://img.shields.io/badge/canvas--2d-orange.svg"/>
-  <img alt="indexeddb" src="https://img.shields.io/badge/indexeddb-orange.svg"/>
-  <img alt="web-worker" src="https://img.shields.io/badge/web--worker-orange.svg"/>
-  <img alt="vanilla-js" src="https://img.shields.io/badge/vanilla--js-orange.svg"/>
-  <img alt="es-modules" src="https://img.shields.io/badge/es--modules-orange.svg"/>
-  <img alt="print-1-to-1" src="https://img.shields.io/badge/print--1--to--1-orange.svg"/>
-  <img alt="kicad-netlist" src="https://img.shields.io/badge/kicad--netlist-orange.svg"/>
+  <img alt="GitHub Pages" src="https://img.shields.io/badge/GitHub%20Pages-live-brightgreen"/>
+  <img alt="HTML5" src="https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white"/>
+  <img alt="CSS3" src="https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white"/>
+  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black"/>
+  <img alt="SVG" src="https://img.shields.io/badge/Render-SVG-orange"/>
+  <img alt="Lucide" src="https://img.shields.io/badge/Icons-Lucide-F56565?logo=lucide&logoColor=white"/>
+  <img alt="No Build" src="https://img.shields.io/badge/No%20build%20tools-required-blue"/>
+  <img alt="IndexedDB" src="https://img.shields.io/badge/Storage-IndexedDB-0891B2"/>
+  <img alt="KiCad Netlist" src="https://img.shields.io/badge/Export-KiCad%20Netlist-6C3BC8"/>
 </p>
 
 <p align="center">
