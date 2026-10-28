@@ -158,3 +158,34 @@ export function placementForAnchor(project, compId, row, col) {
     packageId: symbol.packageId ?? 'pin_header',
   };
 }
+
+/**
+ * Find a free spot on the board for a component: any anchor (row, col) where
+ * the part's footprint does not overlap already-placed parts and stays within
+ * the board. Row-major scan starting at row 0; the first hit is returned.
+ * @param {import('../core/types.js').Project} project
+ * @param {string} compId
+ * @returns {PlacedPart|null} a trial placement, or null when no spot fits
+ */
+export function findFreeBoardSpot(project, compId) {
+  const { rows, cols } = project.board;
+  const occupied = project.board.parts.map((p) => partBounds(project, p));
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < cols; col += 1) {
+      const trial = placementForAnchor(project, compId, row, col);
+      if (!trial) return null;
+      const box = partBounds(project, trial);
+      if (box.minRow < 0 || box.minCol < 0 || box.maxRow >= rows || box.maxCol >= cols) continue;
+      const overlaps = occupied.some(
+        (b) =>
+          box.minRow <= b.maxRow &&
+          box.maxRow >= b.minRow &&
+          box.minCol <= b.maxCol &&
+          box.maxCol >= b.minCol,
+      );
+      if (overlaps) continue;
+      return trial;
+    }
+  }
+  return null;
+}

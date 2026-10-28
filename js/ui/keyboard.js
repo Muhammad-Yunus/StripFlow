@@ -190,7 +190,8 @@ export function initKeyboard(deps) {
           moveSelection(draft.schematic, ui.schematicSelection, dx, dy),
         );
       } else {
-        moveBoardParts(dx, dy);
+        // Board coords: row is vertical (dy), col is horizontal (dx).
+        moveBoardParts(dy, dx);
       }
       return;
     }

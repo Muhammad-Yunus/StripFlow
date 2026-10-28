@@ -11,12 +11,13 @@ import { SPECIAL_ITEMS } from './library.js';
 
 export class SchematicTools {
   /** @param {HTMLCanvasElement} canvas @param {import('../core/store.js').Store} store @param {import('./renderer.js').SchematicRenderer} renderer */
-  constructor(canvas, store, renderer, { onRender = () => {}, onStatus = () => {} } = {}) {
+  constructor(canvas, store, renderer, { onRender = () => {}, onStatus = () => {}, onComponentAdded = () => {} } = {}) {
     this.canvas = canvas;
     this.store = store;
     this.renderer = renderer;
     this.onRender = onRender;
     this.onStatus = onStatus;
+    this.onComponentAdded = onComponentAdded;
     this.drag = null;
     this.labelDrag = null;
     this.wire = null;
@@ -374,6 +375,7 @@ export class SchematicTools {
       if (!comp) return;
       this.store.apply('Add component', (draft) => {
         draft.schematic.components.push(comp);
+        if (this.onComponentAdded) this.onComponentAdded(comp, draft);
       });
       this.store.setUI({ schematicSelection: [comp.id] });
     }

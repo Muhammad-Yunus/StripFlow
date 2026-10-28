@@ -19,6 +19,8 @@ import { SchematicRenderer } from './schematic/renderer.js';
 import { SchematicTools } from './schematic/tools.js';
 import { BoardRenderer } from './board/renderer.js';
 import { BoardTools } from './board/tools.js';
+import { findFreeBoardSpot, findPlaced } from './board/model.js';
+import { placePart } from './board/commands.js';
 import { analyzeBoard } from './board/strips.js';
 import { Sidebar } from './ui/sidebar.js';
 import { Toolbar } from './ui/toolbar.js';
@@ -95,6 +97,14 @@ async function boot() {
   const schematicTools = new SchematicTools(schematicCanvas, store, schematicRenderer, {
     onRender: schedule,
     onStatus: (text) => setHint('schematic', text),
+    onComponentAdded: (comp, draft) => {
+      if (findPlaced(draft, comp.id)) return;
+      const spot = findFreeBoardSpot(draft, comp.id);
+      if (!spot) return;
+      placePart(draft, spot);
+      store.setUI({ boardSelection: [comp.id] });
+      toast(`${comp.ref} → r${spot.row + 1} c${spot.col + 1}`, 'ok');
+    },
   });
   const boardTools = new BoardTools(boardCanvas, store, boardRenderer, {
     onRender: schedule,

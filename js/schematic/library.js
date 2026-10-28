@@ -406,34 +406,33 @@ const BOARD_ART = {
       '</svg>',
   },
   led: {
-    aw: 5.2,
-    ah: 6.4,
+    aw: 4,
+    ah: 5,
     svg:
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2.6 -3.2 5.2 6.4">' +
-      '<rect x="-1.6" y="-2.8" width="3.2" height="5.6" rx="1.5" fill="#b9c6d1" fill-opacity="0.9" stroke="#8d9499" stroke-width="0.26"/>' +
-      '<rect x="-0.9" y="-2" width="1.8" height="4" rx="0.9" fill="#d7e3ec" fill-opacity="0.9"/>' +
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2.5 4 5">' +
+      '<circle cx="0" cy="0" r="1.8" fill="#c0392b" fill-opacity="0.85" stroke="#7f2418" stroke-width="0.16"/>' +
+      '<circle cx="0" cy="0" r="1.35" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.12"/>' +
+      '<text x="-0.62" y="-0.35" text-anchor="middle" font-size="0.9" fill="#fff">+</text>' +
       '</svg>',
   },
   npn: {
     aw: 6,
-    ah: 6,
+    ah: 5.1,
     svg:
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 6 6">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3 -2.55 6 5.1">' +
       '<line x1="0" y1="1.27" x2="0" y2="2.54" stroke="#b9bec2" stroke-width="0.5" stroke-linecap="round"/>' +
       '<line x1="0" y1="-1.27" x2="0" y2="-2.54" stroke="#b9bec2" stroke-width="0.5" stroke-linecap="round"/>' +
-      '<path d="M 1.25 -2.05 L 1.25 2.05 A 2.4 2.4 0 1 1 1.25 -2.05 Z" fill="#1c1c1c" fill-opacity="0.85" stroke="#8d9499" stroke-width="0.26"/>' +
-      '<path d="M -0.2 -1.1 L 0.6 0 L -0.2 1.1" fill="none" stroke="#d7dde2" stroke-width="0.3" stroke-linecap="round"/>' +
+      '<path d="M 1.25 -2.0487801248547877 L 1.25 2.0487801248547877 A 2.4 2.4 0 1 1 1.25 -2.0487801248547877 Z" fill="#1c1c1c" fill-opacity="0.82" stroke="#8d9499" stroke-width="0.26" stroke-linejoin="round"/>' +
       '</svg>',
   },
   pnp: {
     aw: 6,
-    ah: 6,
+    ah: 5.1,
     svg:
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 6 6">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3 -2.55 6 5.1">' +
       '<line x1="0" y1="1.27" x2="0" y2="2.54" stroke="#b9bec2" stroke-width="0.5" stroke-linecap="round"/>' +
       '<line x1="0" y1="-1.27" x2="0" y2="-2.54" stroke="#b9bec2" stroke-width="0.5" stroke-linecap="round"/>' +
-      '<path d="M 1.25 -2.05 L 1.25 2.05 A 2.4 2.4 0 1 1 1.25 -2.05 Z" fill="#1c1c1c" fill-opacity="0.85" stroke="#8d9499" stroke-width="0.26"/>' +
-      '<path d="M 0.6 -1.1 L -0.2 0 L 0.6 1.1" fill="none" stroke="#d7dde2" stroke-width="0.3" stroke-linecap="round"/>' +
+      '<path d="M 1.25 -2.0487801248547877 L 1.25 2.0487801248547877 A 2.4 2.4 0 1 1 1.25 -2.0487801248547877 Z" fill="#1c1c1c" fill-opacity="0.82" stroke="#8d9499" stroke-width="0.26" stroke-linejoin="round"/>' +
       '</svg>',
   },
   opamp: {
@@ -447,13 +446,13 @@ const BOARD_ART = {
     svg: dipArt,
   },
   conn2: {
-    aw: 5.6,
-    ah: 6.2,
+    aw: 2,
+    ah: 4.6,
     svg:
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2.8 -3.1 5.6 6.2">' +
-      '<rect x="-1.27" y="-2.54" width="2.54" height="5.08" rx="0.2" fill="#1e1e1e" fill-opacity="0.85" stroke="#4a90e2" stroke-width="0.26"/>' +
-      '<rect x="-0.85" y="-2.12" width="1.7" height="1.7" rx="0.255" fill="#c9a227" fill-opacity="0.9"/>' +
-      '<rect x="-0.85" y="0.42" width="1.7" height="1.7" rx="0.255" fill="#c9a227" fill-opacity="0.9"/>' +
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -2.3 2 4.6">' +
+      '<rect x="-0.85" y="-2.1" width="1.7" height="4.2" rx="0.25" fill="#1e1e1e" fill-opacity="0.85" stroke="#4a90e2" stroke-width="0.2"/>' +
+      '<rect x="-0.5" y="-1.77" width="1.0" height="1.0" rx="0.2" fill="#c9a227" fill-opacity="0.95"/>' +
+      '<rect x="-0.5" y="0.77" width="1.0" height="1.0" rx="0.2" fill="#c9a227" fill-opacity="0.95"/>' +
       '</svg>',
   },
 };

@@ -54,6 +54,9 @@ const BOXLESS_SYMBOLS = new Set([
   'inductor',
   'switch',
   'conn2',
+  'led',
+  'npn',
+  'pnp',
 ]);
 
 export class BoardRenderer {

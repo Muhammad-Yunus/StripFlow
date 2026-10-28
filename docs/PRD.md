@@ -79,7 +79,7 @@ Prioritas memakai MoSCoW: **M**ust, **S**hould, **C**ould, **W**on't (v1).
 |---|---|---|---|
 | SC-01 | Kanvas skema dengan grid, zoom, pan | M | Grid terlihat; scroll zoom di cursor; right-drag pan; posisi tersimpan di project. |
 | SC-02 | Library simbol bawaan | M | Minimal: Resistor, Capacitor, Polarized Cap, Diode, LED, NPN, PNP, Op-Amp, IC generik (DIP-8/14/16), Connector, Switch, Potentiometer, Ground, Power. |
-| SC-03 | Penempatan komponen dari library | M | Drag dari panel ke kanvas; snap ke grid; komponen baru otomatis dapat ref (R1, C1, ...). |
+| SC-03 | Penempatan komponen dari library | M | Drag dari panel ke kanvas; snap ke grid; komponen baru otomatis dapat ref (R1, C1, ...); komponen baru otomatis juga ditambahkan ke board di spot kosong pertama yang tersedia (tidak tumpang tindih dengan part yang sudah ada, tetap dalam batas board) — tanpa memaksa posisi; jika board penuh, tetap masuk unplaced tray. |
 | SC-04 | Rotasi & mirror | M | `R` rotasi 90°; `M` mirror; berlaku untuk seleksi. |
 | SC-05 | Wiring pin-to-pin / pin-to-grid | M | Klik ujung pin memulai wire; klik pin/titik/grid meneruskan; `Enter` selesai; `Backspace` mundur satu segmen. |
 | SC-05a | Wire tegak & lurus (orthogonal) | M | Setiap segmen wire baru hanya horizontal atau vertikal; target diagonal otomatis disisipi satu siku (elbow) hingga semua segmen axis-aligned; berlaku juga untuk preview kursor live. |

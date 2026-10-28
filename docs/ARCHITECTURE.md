@@ -239,7 +239,7 @@ Catatan:
 - Custom component (`customSymbols`) memakai `SymbolDef` yang sama, dengan `custom: true`; id berawalan `sym_`. Pin offset relatif terhadap origin, integer, dan harus berada di dalam body. Dibuat lewat modal dan dapat dihapus bila belum dipakai.
 - **Editable footprint (SB-14):** dari properties komponen board, **Edit footprint** membuka modal symbol yang sudah terisi body size + pin. Mengedit symbol standar membuat salinan custom dan meng-assign ke komponen terpilih; mengedit custom symbol memperbarui semua komponen yang memakainya. `pin.id` dipertahankan agar net/wire tidak putus, dan endpoint wire yang menempel pada pin ikut digeser ke posisi pin baru.
 - `SComponent.offBoard`: komponen eksternal; board menggambar solder pad (tanpa body solid), print menambahkan tabel off-board wiring. Auto-layout hanya mempertahankan pad yang sudah ditempatkan dan tidak memindahkannya; off-board yang belum ditempatkan diabaikan.
-- Package `flexible` (resistor, cap, diode, LED, switch, inductor, thermistor, fuse, LDR) memakai `leadsSpan` untuk pin fleksibel.
+- Package `flexible` (resistor, cap, diode, switch, inductor, thermistor, fuse, LDR) memakai `leadsSpan` untuk pin fleksibel. LED (`led`) dan cap polar (`cap_pol`) **tidak** fleksibel — pakai footprint tetap berjarak 1 strip (`BOARD_FOOTPRINTS`), pin tegak pin-1 atas / pin-2 bawah.
 
 ### 4.3 Board
 
@@ -371,6 +371,7 @@ Event standar:
 - Schematic (tool select): klik badan part/wire/flag/label untuk select + drag; `Ctrl`/`Shift` toggle/tambah; klik ujung pin atau tepat di endpoint wire memulai draft wire otomatis (pindah ke tool wire). Draft wire bersifat **orthogonal**: setiap langkah menyisipkan siku sehingga semua segmen horizontal/vertikal (helper `manhattanCorner` di `js/schematic/tools.js`); preview kursor mengikuti aturan yang sama. Di tool wire, klik badan simbol komponen meng-commit wire berjalan lalu kembali ke select dan memilih komponen tersebut; klik wire lama snap ke vertex terdekatnya.
 - Board: drag body part untuk memindah, drag endpoint wire untuk memindah satu ujung, drag cut (drill/knife) untuk memindah posisi cut, `Delete` untuk menghapus selection, keyboard `C`/`W` untuk cut/wire. Right-click part menampilkan menu kontekstual (rotate, lock, off-board, unplace); right-click area kosong menampilkan insert/delete row/col.
 - Custom component dibuat lewat modal `#modal-symbol`; disimpan di `project.customSymbols`, otomatis muncul di Library, dan bisa dihapus via context menu selama belum dipakai.
+- Auto-place on add: saat komponen baru dibuat di schematic (`placePending` di `js/schematic/tools.js`), mutator `store.apply('Add component')` memanggil callback `onComponentAdded(comp, draft)`; `main.js` mencari spot bebas lewat `findFreeBoardSpot()` (`js/board/model.js`) — scan row-major hole kosong yang footprint-nya tidak overlap part terpasang dan tetap dalam batas board — lalu `placePart(draft, spot)` menaruh part di spot itu dalam transaksi yang sama. Boundary: `schematic/` tidak import `board/`; coupling lewat callback yang disuntik dari `main.js`. Jika tidak ada spot, part tetap di unplaced tray (tanpa toast). Undo membalik penambahan + placement sebagai satu entry.
 
 ---
 
