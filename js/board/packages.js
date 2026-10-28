@@ -70,6 +70,23 @@ export const BOARD_FOOTPRINTS = {
     ],
     box: { x0: 0, y0: 0, x1: 0, y1: 1 },
   },
+  // TL072 dual op-amp: schematic pins are triangle-oriented (inputs left,
+  // outputs right, supply top/bottom), but the physical DIP-8 is a straight
+  // 4+4 row. Map the 8 pads onto two 4-hole columns so the board reads as a
+  // normal IC. Symbol pin order: [a+, a-, outA, b+, b-, outB, v+, v-].
+  opamp: {
+    pins: [
+      { x: -2, y: -1.5 },
+      { x: -2, y: -0.5 },
+      { x: -2, y: 0.5 },
+      { x: -2, y: 1.5 },
+      { x: 2, y: -1.5 },
+      { x: 2, y: -0.5 },
+      { x: 2, y: 0.5 },
+      { x: 2, y: 1.5 },
+    ],
+    box: { x0: -3, y0: -2, x1: 3, y1: 2 },
+  },
 };
 
 /**

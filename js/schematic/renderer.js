@@ -498,7 +498,7 @@ function drawSymbolArt(ctx, symbol, colors, lineWidth) {
   if (id === 'diode') return drawDiode(ctx, false);
   if (id === 'led') return drawDiode(ctx, true);
   if (id === 'npn' || id === 'pnp') return drawTransistor(ctx, id === 'pnp');
-  if (id === 'opamp') return drawOpamp(ctx);
+  if (id === 'opamp') return drawOpamp(ctx, symbol);
   if (id.startsWith('ic')) return drawIC(ctx, symbol);
   if (id.startsWith('conn')) return drawConnector(ctx, symbol);
   if (id === 'switch') return drawSwitch(ctx);
@@ -610,7 +610,17 @@ function drawTransistor(ctx, pnp) {
   ctx.stroke();
 }
 
-function drawOpamp(ctx) {
+function drawOpamp(ctx, symbol) {
+  const ids = new Set((symbol.pins || []).map((p) => p.id));
+  if (ids.has('outA')) {
+    // Dual op-amp (TL072): two stacked channels sharing +V / -V.
+    opampHalf(ctx, -2);
+    opampHalf(ctx, 2);
+    lead(ctx, 0, -4, 0, -2.55);
+    lead(ctx, 0, 4, 0, 2.55);
+    return;
+  }
+  // Legacy single op-amp (5 pins).
   lead(ctx, -3, -1, -2, -1);
   lead(ctx, -3, 1, -2, 1);
   lead(ctx, 3, 0, 2.5, 0);
@@ -628,6 +638,25 @@ function drawOpamp(ctx) {
   ctx.textBaseline = 'middle';
   ctx.fillText('-', -1.7, -1);
   ctx.fillText('+', -1.7, 1);
+}
+
+/** One op-amp channel: triangle centered at cy with its input/output leads. */
+function opampHalf(ctx, cy) {
+  lead(ctx, -3, cy - 0.5, -2, cy - 0.5);
+  lead(ctx, -3, cy + 0.5, -2, cy + 0.5);
+  lead(ctx, 3, cy, 2.5, cy);
+  ctx.beginPath();
+  ctx.moveTo(-2, cy - 1);
+  ctx.lineTo(-2, cy + 1);
+  ctx.lineTo(2.5, cy);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.font = '0.5px system-ui, sans-serif';
+  ctx.fillStyle = ctx.strokeStyle;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('-', -1.7, cy - 0.5);
+  ctx.fillText('+', -1.7, cy + 0.5);
 }
 
 function drawIC(ctx, symbol) {

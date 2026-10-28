@@ -515,7 +515,9 @@ function iconSvg(id) {
     case 'pnp':
       return wrap('<circle r="2.1"/><path d="M-3 0h2.2M-1-.8v1.6M-1-.3.5-1.4 1-2.3M-1 .3.5 1.4 1 2.3"/>');
     case 'opamp':
-      return wrap('<path d="M-2-2.4v4.8L2.6 0ZM-3-1h1M-3 1h1M2.6 0H3.4M0-3v1M0 2.3V3"/>');
+      return wrap(
+        '<path d="M-1.4-2.8v1.6L1.6-2ZM-3-2h1.4M1.6-2H3M-1.4 1.2v1.6L1.6 2ZM-3 2h1.4M1.6 2H3M0-4v1.4M0 4v-1.4"/>',
+      );
     case 'ic8':
     case 'ic14':
     case 'ic16':
