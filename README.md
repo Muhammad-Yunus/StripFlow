@@ -1,8 +1,4 @@
 <p align="center">
-  <img src="docs/img/banner.png" alt="StripFlow — schematic to stripboard" width="100%">
-</p>
-
-<p align="center">
   <strong>Schematic → stripboard layout, browser-only, zero backend.</strong><br/>
   Draw a circuit, place parts on a virtual veroboard, let simulated-annealing auto-layout resolve cuts &amp; link wires, then print a 1:1 build template.
 </p>
@@ -21,6 +17,10 @@
 
 <p align="center">
   <code>client-only</code> · <code>canvas-2d</code> · <code>indexeddb</code> · <code>web-worker</code> · <code>vanilla-js</code> · <code>es-modules</code> · <code>print-1-to-1</code> · <code>kicad-netlist</code>
+</p>
+
+<p align="center">
+  <img src="docs/img/banner.png" alt="StripFlow — schematic to stripboard" width="100%">
 </p>
 
 ---
