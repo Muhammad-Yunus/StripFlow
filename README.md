@@ -29,7 +29,7 @@
 
 ## Features
 
-| | |
+| Feature area | Highlights |
 |---|---|
 | **Schematic editor** | Component library (R/C/L, diode, LED, transistors, op-amps, DIP ICs, connectors, switches, pots…), orthogonal wiring, auto net detection & coloring, GND/power flags, net labels, custom components, off-board marking |
 | **Stripboard editor** | 2.54 mm hole grid, live copper-strip coloring per net, real-time conflict detection, drill/knife cuts, link wires, row/col insert & delete, flexible 2-pin lead span, lockable parts |
