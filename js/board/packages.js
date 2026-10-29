@@ -70,23 +70,34 @@ export const BOARD_FOOTPRINTS = {
     ],
     box: { x0: 0, y0: 0, x1: 0, y1: 1 },
   },
+  conn3: {
+    pins: [
+      { x: -1, y: 0 },
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+    ],
+    box: { x0: -1, y0: 0, x1: 1, y1: 0 },
+  },
   // TL072 dual op-amp: schematic pins are triangle-oriented (inputs left,
   // outputs right, supply top/bottom), but the physical DIP-8 is a straight
   // 4+4 row. Map pads onto two 4-hole columns following the real TL072
-  // pinout (pin 1 top-left). Symbol pin order: [a+, a-, outA, b+, b-, outB,
-  // v+, v-] -> DIP pins [2, 1, 3, 6, 7, 5, 8, 4].
+  // datasheet pinout (pin 1 top-left, clockwise):
+  //   DIP 1=1OUT(outA) 2=1IN-(a-) 3=1IN+(a+) 4=V-(v-)
+  //   DIP 5=2IN+(b+)   6=2IN-(b-) 7=2OUT(outB) 8=V+(v+)
+  // Symbol pin order: [a+, a-, outA, b+, b-, outB, v+, v-]
+  // -> DIP pins [3, 2, 1, 5, 6, 7, 8, 4].
   opamp: {
     pins: [
-      { x: -2, y: -0.5 }, // a+   (DIP 2)
-      { x: -2, y: -1.5 }, // a-   (DIP 1)
-      { x: -2, y: 0.5 }, // outA (DIP 3)
-      { x: 2, y: 0.5 }, // b+   (DIP 6)
-      { x: 2, y: -0.5 }, // b-   (DIP 7)
-      { x: 2, y: 1.5 }, // outB (DIP 5)
-      { x: 2, y: -1.5 }, // v+   (DIP 8)
-      { x: -2, y: 1.5 }, // v-   (DIP 4)
+      { x: -1, y: 1 }, // a+    (DIP 3)
+      { x: -1, y: 0 }, // a-    (DIP 2)
+      { x: -1, y: -1 }, // outA  (DIP 1)
+      { x: 1, y: -1 }, // b+    (DIP 5)
+      { x: 1, y: 0 }, // b-    (DIP 6)
+      { x: 1, y: 1 }, // outB  (DIP 7)
+      { x: 1, y: 2 }, // v+    (DIP 8)
+      { x: -1, y: 2 }, // v-    (DIP 4)
     ],
-    box: { x0: -3, y0: -2, x1: 3, y1: 2 },
+    box: { x0: -1, y0: -1, x1: 1, y1: 2 },
   },
 };
 

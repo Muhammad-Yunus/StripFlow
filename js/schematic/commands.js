@@ -1,6 +1,111 @@
-import { componentPinPos } from '../core/geometry.js';
+import { componentPinPos, pointOnSegment, pointKey } from '../core/geometry.js';
 import { uid, nextRef } from '../core/ids.js';
 import { getSymbol } from './library.js';
+
+/**
+ * Find a wire whose polyline (vertices + segments) passes through (x, y)
+ * within a tolerance.  Intended for "is this wire attached to a pin?".
+ * @param {import('../core/types.js').Wire[]} wires
+ * @param {number} x
+ * @param {number} y
+ * @param {number} [tol] grid cells
+ * @returns {string|null} wire id, or null
+ */
+export function findWireIdAt(wires, x, y, tol = 0.02) {
+  for (const w of wires) {
+    const pts = w.points;
+    if (pts.length === 0) continue;
+    for (const p of pts) {
+      if (Math.hypot(p.x - x, p.y - y) <= tol) return w.id;
+    }
+    for (let i = 0; i < pts.length - 1; i++) {
+      if (pointOnSegment({ x, y }, pts[i], pts[i + 1], tol)) return w.id;
+    }
+  }
+  return null;
+}
+
+/**
+ * Returns all extra schematic entity ids that are electrically connected to
+ * any pin of `compId`.  Used so that dragging a component also drags the
+ * wires, labels, and flags that follow it — matching KiCad schematics.
+ * @param {import('../core/types.js').Schematic} schematic
+ * @param {string} compId
+ * @returns {string[]}
+ */
+export function findAnchorIdsForComponent(schematic, compId) {
+  const extra = new Set();
+  for (const wire of schematic.wires) {
+    for (const comp of schematic.components) {
+      if (comp.id !== compId) continue;
+      for (const pin of comp.pins) {
+        const p = componentPinPos(comp, pin.offset);
+        if (findWireIdAt([wire], p.x, p.y) !== null) {
+          extra.add(wire.id);
+        }
+      }
+    }
+  }
+  for (const label of schematic.labels) {
+    if (label.compId === compId) extra.add(label.id);
+  }
+  for (const flag of schematic.flags) {
+    if (flag.compId === compId) extra.add(flag.id);
+  }
+  return [...extra];
+}
+
+/**
+ * For each wire that has one or more endpoints physically attached to any of
+ * the moved components, slide those endpoint(s) by (dx, dy) while leaving
+ * the rest of the polyline untouched.  This is what makes wires behave like
+ * flexible jumper wires in KiCad.
+ * @param {import('../core/types.js').Schematic} schematic
+ * @param {string[]} movedCompIds
+ * @param {number} dx
+ * @param {number} dy
+ */
+export function moveWireEndpointsAttachedTo(schematic, movedCompIds, dx, dy) {
+  if (dx === 0 && dy === 0) return;
+  const movedSet = new Set(movedCompIds);
+  // Snapshot pin world positions BEFORE any moves so we match the original
+  // attachment points, not intermediate positions from earlier steps.
+  /** @type {Map<string, string>}  pk → compId */
+  const pinWorldMap = new Map();
+  for (const cid of movedSet) {
+    const comp = schematic.components.find((c) => c.id === cid);
+    if (!comp) continue;
+    for (const pin of comp.pins) {
+      const p = componentPinPos(comp, pin.offset);
+      pinWorldMap.set(pointKey(p.x, p.y), cid);
+    }
+  }
+  if (pinWorldMap.size === 0) return;
+
+  for (const wire of schematic.wires) {
+    const pts = wire.points;
+    if (pts.length === 0) continue;
+    let changed = false;
+    // Check every point on the wire — end points AND interior junctions — and
+    // slide any that land on a snapshot pin position.
+    for (let i = 0; i < pts.length; i++) {
+      const pk = pointKey(pts[i].x, pts[i].y);
+      if (pinWorldMap.has(pk)) {
+        pts[i] = { x: pts[i].x + dx, y: pts[i].y + dy };
+        changed = true;
+      }
+    }
+    if (changed) {
+      // Remove consecutive duplicate points produced by the move.
+      const clean = [];
+      for (const p of pts) {
+        const prev = clean[clean.length - 1];
+        if (!prev || prev.x !== p.x || prev.y !== p.y) clean.push({ ...p });
+      }
+      wire.points = clean.length >= 2 ? clean : pts;
+    }
+  }
+}
 
 /** @param {import('../core/types.js').Project} project @param {string} symbolId */
 export function symbolFor(project, symbolId) {
@@ -66,12 +171,73 @@ export function deleteSelection(schematic, ids) {
 export function moveSelection(schematic, ids, dx, dy) {
   if (dx === 0 && dy === 0) return;
   const set = new Set(ids);
+  // Snapshot pin world positions BEFORE moving any component, so we know which
+  // wire points are attached to which part.
+  /** @type {Map<string, string>}  pk → compId */
+  const pinWorldMap = new Map();
+  for (const id of set) {
+    if (!id.startsWith('cmp_')) continue;
+    const comp = schematic.components.find((c) => c.id === id);
+    if (!comp) continue;
+    for (const pin of comp.pins) {
+      const p = componentPinPos(comp, pin.offset);
+      pinWorldMap.set(pointKey(p.x, p.y), id);
+    }
+  }
+  // Move components.
   for (const c of schematic.components) {
     if (set.has(c.id)) c.pos = { x: c.pos.x + dx, y: c.pos.y + dy };
   }
-  for (const w of schematic.wires) {
-    if (set.has(w.id)) w.points = w.points.map((p) => ({ x: p.x + dx, y: p.y + dy }));
+  // Slide only the wire points that were attached to moved-component pins.
+  // Preserve orthogonal routing: if all adjacent segments share an axis,
+  // lock the perpendicular axis so the wire stays straight (horizontal/vertical).
+  // If segments span different axes (a corner/L-bend) or there's only one
+  // segment, let the point follow the drag freely.
+  const SNAP = 1;
+  for (const wire of schematic.wires) {
+    const pts = wire.points;
+    if (pts.length === 0) continue;
+    let changed = false;
+    for (let i = 0; i < pts.length; i++) {
+      const pk = pointKey(pts[i].x, pts[i].y);
+      if (!pinWorldMap.has(pk)) continue;
+      const oldPt = { ...pts[i] };
+      const newX = oldPt.x + dx;
+      const newY = oldPt.y + dy;
+      const prev = i > 0 ? pts[i - 1] : null;
+      const next = i < pts.length - 1 ? pts[i + 1] : null;
+      // Collect the axis directions of all adjacent segments.
+      /** @type {'h'|'v'|null[]} */
+      const dirs = [];
+      if (prev) dirs.push(Math.abs(prev.x - oldPt.x) > 0.001 ? 'h' : 'v');
+      if (next) dirs.push(Math.abs(next.x - oldPt.x) > 0.001 ? 'h' : 'v');
+      let finalX = newX;
+      let finalY = newY;
+      if (dirs.length === 2 && dirs[0] === dirs[1]) {
+        // Both segments on the same axis — keep the perpendicular coordinate.
+        if (dirs[0] === 'h') finalY = oldPt.y; // horizontal: keep y
+        else finalX = oldPt.x;                 // vertical: keep x
+      }
+      // Otherwise: free move (corner or single segment).
+      // Snap to grid.
+      finalX = Math.round(finalX / SNAP) * SNAP;
+      finalY = Math.round(finalY / SNAP) * SNAP;
+      if (finalX !== oldPt.x || finalY !== oldPt.y) {
+        pts[i] = { x: finalX, y: finalY };
+        changed = true;
+      }
+    }
+    if (changed) {
+      // Remove consecutive duplicate points produced by the move.
+      const clean = [];
+      for (const p of pts) {
+        const prev = clean[clean.length - 1];
+        if (!prev || prev.x !== p.x || prev.y !== p.y) clean.push({ ...p });
+      }
+      wire.points = clean.length >= 2 ? clean : pts;
+    }
   }
+  // Move flags and labels that are directly attached to a moved component.
   for (const f of schematic.flags) {
     if (set.has(f.id)) f.pos = { x: f.pos.x + dx, y: f.pos.y + dy };
   }

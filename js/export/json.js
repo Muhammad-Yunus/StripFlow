@@ -1,4 +1,68 @@
 import { SCHEMA_VERSION, createProject } from '../core/state.js';
+import { LIBRARY } from '../schematic/library.js';
+
+/**
+ * Snap dual op-amp component pins to the schematic's canonical layout and shift
+ * any wire/flag/label endpoints that were touching the old pin positions to the
+ * new ones, so electrical nets survive the migration.
+ * @param {import('../core/types.js').Project} project
+ */
+function resyncOpampPins(project) {
+  const opamp = LIBRARY.find((s) => s.id === 'opamp');
+  if (!opamp) return;
+  const canonical = new Map(opamp.pins.map((p) => [p.id, p]));
+
+  for (const comp of project.schematic.components) {
+    if (comp.symbolId !== 'opamp') continue;
+    const hasOut = (comp.pins || []).some((p) => p.id === 'outA');
+    if (!hasOut) continue;
+
+    const compX = comp.pos?.x ?? 0;
+    const compY = comp.pos?.y ?? 0;
+    const rot = comp.rot ?? 0;
+    const mir = comp.mirror;
+
+    // Rotate/mirror the old offset into component-local space, then into
+    // absolute schematic space, to find where this pin actually sits.
+    const absPos = (o) => {
+      let lx = o.x;
+      let ly = o.y;
+      if (mir) lx = -lx;
+      const rad = (rot * Math.PI) / 180;
+      const rx = lx * Math.cos(rad) - ly * Math.sin(rad);
+      const ry = lx * Math.sin(rad) + ly * Math.cos(rad);
+      return { x: compX + rx, y: compY + ry };
+    };
+
+    const moves = new Map();
+    for (const pin of comp.pins) {
+      const target = canonical.get(pin.id);
+      if (!target) continue;
+      const same = pin.offset?.x === target.offset.x && pin.offset?.y === target.offset.y;
+      if (same) continue;
+      const from = absPos(pin.offset);
+      const to = absPos(target.offset);
+      pin.offset = { ...target.offset };
+      const key = (p) => `${Math.round(p.x * 1000) / 1000},${Math.round(p.y * 1000) / 1000}`;
+      moves.set(key(from), to);
+    }
+    if (moves.size === 0) continue;
+
+    const shift = (pt) => {
+      const m = moves.get(`${Math.round(pt.x * 1000) / 1000},${Math.round(pt.y * 1000) / 1000}`);
+      return m ? m : pt;
+    };
+    for (const w of project.schematic.wires) {
+      w.points = w.points.map(shift);
+    }
+    for (const f of project.schematic.flags) {
+      f.pos = shift(f.pos);
+    }
+    for (const l of project.schematic.labels) {
+      l.pos = shift(l.pos);
+    }
+  }
+}
 
 /**
  * @param {import('../core/types.js').Project} project
@@ -99,6 +163,7 @@ export function normalize(raw) {
     offBoard: Boolean(c.offBoard),
     attrs: c.attrs ?? {},
   }));
+  resyncOpampPins(project);
   project.schematic.wires = Array.isArray(project.schematic.wires)
     ? project.schematic.wires.filter((w) => Array.isArray(w.points) && w.points.length >= 2)
     : [];

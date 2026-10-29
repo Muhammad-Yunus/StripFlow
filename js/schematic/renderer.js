@@ -610,15 +610,59 @@ function drawTransistor(ctx, pnp) {
   ctx.stroke();
 }
 
+// Dual op-amp (TL072) body geometry. Two stacked triangles sharing the left
+// edge; inputs lead to the left, outputs lead out from the right tip, and the
+// supplies sit on the top/bottom edges. Terminal dots land on these ends.
+const OPA_LX = -0.8; // triangle left edge (narrower, proportional body)
+const OPA_TX = 1.2; // triangle right tip
+const OPA_HH = 1; // half-height of each triangle
+const OPA_YY = [
+  -1.8, // channel A centre
+  1.8, // channel B centre,
+];
+const OPA_IN = [
+  -1, // channel A input dots (a+ upper, a- lower)
+  1, // channel B input dots (b- upper, b+ lower)
+];
+const OPA_OUT_X = 1.8; // outA / outB dots
+const OPA_PWR_Y = 3; // v+ / v- dots, outside the slanted outer edges
+// Parameter of the slanted outer edge at x=0, so supply leads land exactly
+// on the triangle's top/bottom edges (no gap, no pass-through).
+const OPA_PWR_T = (0 - OPA_LX) / (OPA_TX - OPA_LX); // ≈0.4 with the current geometry
+
 function drawOpamp(ctx, symbol, comp) {
-  const pins = (comp && comp.pins) || symbol.pins || [];
-  const ids = new Set(pins.map((p) => p.id));
-  if (ids.has('outA')) {
-    // Dual op-amp (TL072): two stacked channels sharing +V / -V.
-    opampHalf(ctx, -1.8);
-    opampHalf(ctx, 1.8);
-    lead(ctx, 0, -3, 0, -2.8);
-    lead(ctx, 0, 3, 0, 2.8);
+  const hasOut = (comp?.pins ?? symbol.pins)?.some((p) => p.id === 'outA');
+  if (hasOut) {
+    // Rigid dual body: two triangles sharing the left edge.
+    ctx.beginPath();
+    for (const cy of OPA_YY) {
+      ctx.moveTo(OPA_LX, cy - OPA_HH);
+      ctx.lineTo(OPA_LX, cy + OPA_HH);
+      ctx.lineTo(OPA_TX, cy);
+      ctx.closePath();
+    }
+    ctx.stroke();
+    // Inputs lead in from the dots (x=-1.5) to the triangle left edge.
+    for (const cy of OPA_YY) {
+      lead(ctx, -1.5, cy - 0.5, OPA_LX, cy - 0.5);
+      lead(ctx, -1.5, cy + 0.5, OPA_LX, cy + 0.5);
+    }
+    // Horizontal output leads extend from each triangle's right tip.
+    lead(ctx, OPA_TX, OPA_YY[0], OPA_OUT_X, OPA_YY[0]); // outA
+    lead(ctx, OPA_TX, OPA_YY[1], OPA_OUT_X, OPA_YY[1]); // outB
+    // v+ / v- supply leads run from each pin dot to the slanted outer edge
+    // of its own triangle, so the line touches the body (no pass-through).
+    lead(ctx, 0, -OPA_PWR_Y, 0, OPA_YY[0] - OPA_HH + OPA_PWR_T * OPA_HH); // v+ dot -> top edge
+    lead(ctx, 0, OPA_PWR_Y, 0, OPA_YY[1] + OPA_HH - OPA_PWR_T * OPA_HH); // v- dot -> bottom edge
+    // +/- signs just inside each triangle.
+    ctx.font = '0.45px system-ui, sans-serif';
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('+', OPA_LX + 0.3, OPA_YY[0] + 0.5);
+    ctx.fillText('-', OPA_LX + 0.3, OPA_YY[0] - 0.5);
+    ctx.fillText('+', OPA_LX + 0.3, OPA_YY[1] - 0.5);
+    ctx.fillText('-', OPA_LX + 0.3, OPA_YY[1] + 0.5);
     return;
   }
   // Legacy single op-amp (5 pins).
@@ -639,29 +683,6 @@ function drawOpamp(ctx, symbol, comp) {
   ctx.textBaseline = 'middle';
   ctx.fillText('-', -1.7, -1);
   ctx.fillText('+', -1.7, 1);
-}
-
-/**
- * One op-amp channel: triangle centred at cy. Left edge at x=-1.5, output
- * tip at x=2; input/output leads run from x=∓2 (where the pin dots sit) to
- * the triangle edges, so every dot lands exactly on a line end.
- */
-function opampHalf(ctx, cy) {
-  lead(ctx, -2, cy - 0.5, -1.5, cy - 0.5);
-  lead(ctx, -2, cy + 0.5, -1.5, cy + 0.5);
-  lead(ctx, 1.5, cy, 2, cy);
-  ctx.beginPath();
-  ctx.moveTo(-1.5, cy - 1);
-  ctx.lineTo(-1.5, cy + 1);
-  ctx.lineTo(2, cy);
-  ctx.closePath();
-  ctx.stroke();
-  ctx.font = '0.45px system-ui, sans-serif';
-  ctx.fillStyle = ctx.strokeStyle;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('-', -1.2, cy - 0.5);
-  ctx.fillText('+', -1.2, cy + 0.5);
 }
 
 function drawIC(ctx, symbol) {

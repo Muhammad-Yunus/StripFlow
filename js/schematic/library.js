@@ -107,12 +107,12 @@ export const LIBRARY = [
     height: 6,
     packageId: 'dip8',
     pins: [
-      { id: 'a+', name: '+', offset: { x: -2, y: -1.3 }, type: 'input' },
-      { id: 'a-', name: '-', offset: { x: -2, y: -2.3 }, type: 'input' },
-      { id: 'outA', name: 'A', offset: { x: 2, y: -1.8 }, type: 'output' },
-      { id: 'b+', name: '+', offset: { x: -2, y: 2.3 }, type: 'input' },
-      { id: 'b-', name: '-', offset: { x: -2, y: 1.3 }, type: 'input' },
-      { id: 'outB', name: 'B', offset: { x: 2, y: 1.8 }, type: 'output' },
+      { id: 'a+', name: '+', offset: { x: -1.5, y: -1.3 }, type: 'input' },
+      { id: 'a-', name: '-', offset: { x: -1.5, y: -2.3 }, type: 'input' },
+      { id: 'outA', name: 'OUT', offset: { x: 1.8, y: -1.8 }, type: 'output' },
+      { id: 'b+', name: '+', offset: { x: -1.5, y: 1.3 }, type: 'input' },
+      { id: 'b-', name: '-', offset: { x: -1.5, y: 2.3 }, type: 'input' },
+      { id: 'outB', name: 'OUT', offset: { x: 1.8, y: 1.8 }, type: 'output' },
       { id: 'v+', name: '+V', offset: { x: 0, y: -3 }, type: 'power' },
       { id: 'v-', name: '-V', offset: { x: 0, y: 3 }, type: 'power' },
     ],
@@ -330,6 +330,35 @@ const dipArt =
   '</svg>';
 
 /**
+ * TL072 dual op-amp: a wider DIP-8 with a subtle channel groove down the
+ * middle, realistic gull-wing leads on both sides, and a pin-1 indicator dot.
+ * Distinct from the plain dipArt so the op-amp reads as its own part.
+ */
+const tl072Art =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4.5 -6 9 12">' +
+  [
+    [-3.26, -1.63],
+    [-3.26, -4.89],
+    [3.26, -4.89],
+    [3.26, -1.63],
+    [3.26, 1.63],
+    [3.26, 4.89],
+    [-3.26, 4.89],
+    [-3.26, 1.63],
+  ]
+    .map(([xx, yy]) => {
+      const isLeft = xx < 0;
+      const x0 = isLeft ? xx : xx - 0.38;
+      return `<rect x="${x0}" y="${yy - 0.18}" width="0.38" height="0.36" fill="#b9bec2" fill-opacity="0.9"/>`;
+    })
+    .join('') +
+  '<rect x="-4.4" y="-5.87" width="8.8" height="11.74" rx="0.3" fill="#1c1c1c" fill-opacity="0.9" stroke="#8d9499" stroke-width="0.26"/>' +
+  '<rect x="-4.15" y="-5.62" width="8.3" height="11.24" rx="0.2" fill="#2b2b2b"/>' +
+  '<line x1="0" y1="-5.62" x2="0" y2="5.62" stroke="#0e0e0e" stroke-width="0.14"/>' +
+  '<circle cx="-3.4" cy="-4.73" r="0.45" fill="rgba(255,255,255,0.28)"/>' +
+  '</svg>';
+
+/**
  * Board-view art per built-in symbol. Each entry holds a self-contained SVG
  * (literal colors, no CSS variables or baked-in labels) that depicts the
  * physical top of the part, plus its local width/height (viewBox extents) used
@@ -439,9 +468,9 @@ const BOARD_ART = {
       '</svg>',
   },
   opamp: {
-    aw: 9.2,
-    ah: 9.8,
-    svg: dipArt,
+    aw: 9,
+    ah: 12,
+    svg: tl072Art,
   },
   ic8: {
     aw: 9.2,
@@ -456,6 +485,17 @@ const BOARD_ART = {
       '<rect x="-0.85" y="-2.1" width="1.7" height="4.2" rx="0.25" fill="#1e1e1e" fill-opacity="0.85" stroke="#4a90e2" stroke-width="0.2"/>' +
       '<rect x="-0.5" y="-1.77" width="1.0" height="1.0" rx="0.2" fill="#c9a227" fill-opacity="0.95"/>' +
       '<rect x="-0.5" y="0.77" width="1.0" height="1.0" rx="0.2" fill="#c9a227" fill-opacity="0.95"/>' +
+      '</svg>',
+  },
+  conn3: {
+    aw: 7.3,
+    ah: 2,
+    svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3.65 -1 7.3 2">' +
+      '<rect x="-3.48" y="-0.85" width="6.96" height="1.7" rx="0.25" fill="#1e1e1e" fill-opacity="0.85" stroke="#4a90e2" stroke-width="0.2"/>' +
+      '<rect x="-3.13" y="-0.5" width="1.0" height="1.0" rx="0.2" fill="#c9a227" fill-opacity="0.95"/>' +
+      '<rect x="-0.5" y="-0.5" width="1.0" height="1.0" rx="0.2" fill="#c9a227" fill-opacity="0.95"/>' +
+      '<rect x="2.13" y="-0.5" width="1.0" height="1.0" rx="0.2" fill="#c9a227" fill-opacity="0.95"/>' +
       '</svg>',
   },
 };

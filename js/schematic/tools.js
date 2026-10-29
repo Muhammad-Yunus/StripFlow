@@ -230,6 +230,7 @@ export class SchematicTools {
         const ids = this.drag.ids;
         this.store.transient((draft) => moveSelection(draft.schematic, ids, dx, dy));
         this.drag.last = { x: this.drag.last.x + dx, y: this.drag.last.y + dy };
+        this.onRender();
       }
       return;
     }

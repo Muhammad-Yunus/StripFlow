@@ -31,7 +31,7 @@
 
 | Feature area | Highlights |
 |---|---|
-| **Schematic editor** | Component library (R/C/L, diode, LED, transistors, op-amps, DIP ICs, connectors, switches, pots…), orthogonal wiring, auto net detection & coloring, GND/power flags, net labels, custom components, off-board marking |
+| **Schematic editor** | Component library (R/C/L, diode, LED, transistors, op-amps, DIP ICs, connectors, switches, pots…), orthogonal wiring, auto net detection & coloring, GND/power flags, net labels, custom components, off-board marking, **KiCad-like draggable wires** (straight segments stay rigid, corners stay flexible, grid-snapped) |
 | **Stripboard editor** | 2.54 mm hole grid, live copper-strip coloring per net, real-time conflict detection, drill/knife cuts, link wires, row/col insert & delete, flexible 2-pin lead span, lockable parts |
 | **Auto-layout** | Sequence-pair + simulated-annealing router in a Web Worker with effort levels, board-size locking, cancellable progress; conflict-free result or an explained failure |
 | **Print & export** | 1:1 component/cut sheets with calibration ruler, BOM, JSON round-trip, KiCad netlist + `StripFlow.pretty` footprint zip, PNG/SVG export, QR-coded boards |
