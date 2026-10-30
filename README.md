@@ -36,7 +36,7 @@
 
 <p align="center">
   <a href="https://muhammad-yunus.github.io/StripFlow/" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.shields.io/badge/Try%20it%20live-%F0%9F%93%A1%20RF%20Tools-E5E793?style=for-the-badge&labelColor=8B8D08" alt="Try it live"/>
+    <img src="https://img.shields.io/badge/Try%20it%20live-%F0%9F%8E%AD%20StripFlow-E5E793?style=for-the-badge&labelColor=8B8D08" alt="Try it live"/>
   </a>
 </p>
 
