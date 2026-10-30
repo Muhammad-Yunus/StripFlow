@@ -3,6 +3,15 @@
 </p>
 
 <p align="center">
+  <a href="https://muhammad-yunus.github.io/StripFlow/" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/badge/Live%20Demo-Open-blue?style=for-the-badge&logo=github" alt="Live Demo"/>
+  </a>
+  <a href="https://github.com/Muhammad-Yunus/StripFlow" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/badge/View%20on%20GitHub-gray?style=for-the-badge&logo=github" alt="GitHub"/>
+  </a>
+</p>
+
+<p align="center">
   <strong>Schematic → stripboard layout, browser-only, zero backend.</strong><br/>
   Draw a circuit, place parts on a virtual veroboard, let simulated-annealing auto-layout resolve cuts &amp; link wires, then print a 1:1 build template.
 </p>
